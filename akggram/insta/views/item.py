@@ -1,4 +1,4 @@
-from django.http import HttpResponse, JsonResponse
+'''from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from insta.models import Item
@@ -28,3 +28,4 @@ class IremDetail(generics.ListCreateAPIView):
         queryset = self.get.object()
         serializer = ItemDetailSerilizer(queryset,many=False)
         return Response(serializer.data)
+'''

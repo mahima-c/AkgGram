@@ -2,35 +2,44 @@ from django.contrib.auth import get_user_model
 from django.conf import settings 
 from rest_framework import generics,status
 from rest_framework.response import Response
-from insta.auth import AuthTools
-from insta import settings as api_settings
+from insta.auth.utils import AuthTools
 from insta.auth import serializers
-from insta.serializers import profileSerializer
-from insta.serializers import UserSerializer
+from insta.serializers.profile import ProfileSerializer
+from insta.serializers.user import UserSerializer
 from insta.models import Profile
 import re
+from insta.permissions import IsAdmin
+from rest_framework.permissions import AllowAny,IsAuthenticated,DjangoModelPermissions
+from insta.auth.serializers import LoginSerializer
 
 
 User = get_user_model()
+
 class UserView(generics.RetrieveAPIView):
     model = User
     serializer_class = UserSerializer
-    Permission_classes = api_settings.CONSUMER_PERMISSIONS
+    CONSUMER_PERMISSIONS=IsAuthenticated
+
+    Permission_classes = CONSUMER_PERMISSIONS
 
     def get_object(self,*args,**kwargs):
         return self.request.user
 
 class ProfileView(generics.RetrieveAPIView):
     model = User.profile
-    serializer_class = profileSerializer
-    Permission_classes = api_settings.CONSUMER_PERMISSIONS
+    serializer_class = ProfileSerializer
+    CONSUMER_PERMISSIONS=IsAuthenticated
+    Permission_classes = CONSUMER_PERMISSIONS
 
     def get_object(self,*args,**kwargs):
         return self.request.user.profile
 
 
 class Loginview(generics.RetrieveAPIView):
-    Permission_classes = api_settings.UNPROTECTED
+    UNPROTECTED=AllowAny
+    Permission_classes = UNPROTECTED
+    serializer_class = LoginSerializer
+
     def post(self,request):
         if 'email' in request.data and 'password' in request.data:
 
@@ -49,7 +58,9 @@ class Loginview(generics.RetrieveAPIView):
 
         
 class LogoutView(generics.RetrieveAPIView):
-    Permission_classes = api_settings.CONSUMER_PERMISSIONS
+    CONSUMER_PERMISSIONS=IsAuthenticated
+
+    Permission_classes = CONSUMER_PERMISSIONS
     def post(self,request):
         if AuthTools.logout(request):
             return Response(status=status.HTTP_200_OK)
@@ -59,10 +70,11 @@ class LogoutView(generics.RetrieveAPIView):
 
 class RegisterView(generics.RetrieveAPIView):
     serializer_class = serializers.UserRegisterSerializer
-    Permission_class = api_settings.UNPROTECTED
 
+    UNPROTECTED=AllowAny
+    Permission_classes = UNPROTECTED
     def perform_create(self,serializer):
-        isinstance = serializer.save()
+        instance = serializer.save()
 
 
 

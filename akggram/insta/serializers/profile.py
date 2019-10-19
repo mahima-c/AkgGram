@@ -1,15 +1,13 @@
 from rest_framework.serializers import ModelSerializer,PrimaryKeyRelatedField, SerializerMethodField
-from django.contrib.auth.models import User
+from insta.models import Profile
 
 
-class UserSerializer(ModelSerializer):
-    
+class ProfileSerializer(ModelSerializer):
     class Meta:
-        module = User
+        module = Profile
         fields = (
             'id',
-            'username',
-            'email',
+            'website_url',
         )
 
         read_only_fields = ('id',)

@@ -1,18 +1,22 @@
 #app settiing
-from permissions import IsAdmin
+from insta.permissions import IsAdmin
 from rest_framework.permissions import AllowAny,IsAuthenticated,DjangoModelPermissions
+    
 ADMIN_PERMISSIONS =[
-    IsAuthenticated,
-    IsAdmin
+        IsAuthenticated,
+        IsAdmin
 
 ]
+
 STANDARD_PERMISSIONS = [
-    IsAuthenticated
+        IsAuthenticated
 
 ]
+
 COUSUMER_PERMISSIONS = [
-    IsAuthenticated
+        IsAuthenticated
 ]
+
 UNPROTECTED = [
-    AllowAny
+        AllowAny
 ]

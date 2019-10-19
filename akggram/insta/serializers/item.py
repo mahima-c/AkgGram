@@ -1,4 +1,4 @@
-from rest_framework import ModelSerializer,PrimaryKeyRelatedField, SerializerMethodField
+'''from rest_framework import ModelSerializer,PrimaryKeyRelatedField, SerializerMethodField
 from insta.models import Item
 from django.contrib.auth.models import User
 from insta.serializers.user import UserSerializer
@@ -29,4 +29,4 @@ class ItemDetailSerializer(ModelSerializer):
     )
 
 
-
+'''

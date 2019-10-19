@@ -1,5 +1,5 @@
 from django.core import signing
-from django.core.urlresolvers import reverse
+#from django.core.urlresolvers import reverse
 from django.core.validators import validate_email
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.contrib.auth import login,logout,authenticate
@@ -7,8 +7,8 @@ from django.contrib.auth.models import User,Group
 from django.conf import settings as django_settings
 from rest_framework.authtoken.models import Token
 from insta.models import Profile
-from insta.auth.settings import settings as auth_settings
-import json,re
+from insta.auth import settings as auth_settings
+import re
 
 class AuthTools:
     #"auth tool"
@@ -61,6 +61,10 @@ class AuthTools:
             user = authenticate(username=username,password=password)
             if user is not None:
                 return user
+        except:
+            pass   
+
+        return None     
 
     @staticmethod
     def authenticate_email(email,password):
@@ -116,9 +120,11 @@ class AuthTools:
                 Token.objects.filter(user=request.user).delete()     
                 logout(request)
                 return True
-            except Exception, e:
-                print e
-                pass
+            #except Exception, e:
+                #print e
+                #pass
+            except:
+                pass    
 
 
         return False    
@@ -162,10 +168,11 @@ class AuthTools:
                     'user': user,
                     'is_new':True
                 }
-        except Exception , e:
-            print str(e) 
-            raise Exception(e.message)  
-
+        #except Exception , e:
+            #print str(e) 
+            #raise Exception(e.message)  
+        except:
+            pass
         return False 
 
 
