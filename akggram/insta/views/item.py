@@ -2,7 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from insta.models import Item
-from insta.serializers.item import  ItemSerializer,ItemDetailSerilizer
+from insta.serializers import  ItemSerializer,ItemDetailSerilizer
 from rest_framework import generics,mixins,status
 from rest_framework.response import Response
 from django.conf import settings
