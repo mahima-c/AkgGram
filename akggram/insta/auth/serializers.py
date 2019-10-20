@@ -5,6 +5,7 @@ from insta.serializers.profile import ProfileSerializer
 from insta.serializers.user import UserSerializer
 from insta.auth.utils import AuthTools
 from rest_framework.authtoken.models import Token
+
 User = get_user_model()
 class UserRegisterSerializer(serializers.ModelSerializer):
 
@@ -47,7 +48,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.ModelSerializer):
     auth_token = serializers.CharField(source='key')
-    user = UserSerializer(many=False,read_only=True)
+    user = UserSerializer(many=False)
     class Meta:
         model = Token
         fields = (

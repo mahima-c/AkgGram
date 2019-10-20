@@ -4,22 +4,19 @@ from django.conf import settings
 
 # Create your models here.
 class Profile(models.Model):
+    ROLE_CHOICES =(
+        ('consumer','Consumer'),
+        ('staff','Staff')
+
+    )
     user = models.OneToOneField(User,on_delete = models.CASCADE)
     bio = models.TextField(blank=True,null=True)
     website_url = models.CharField(blank=True,null=True,max_length=100)
+    role = models.CharField(max_length=8,choices=ROLE_CHOICES)
 
     def __unicode__(self):
         return self.user.username
 
-class Item(models.Model):
-    title = models.CharField(max_length=255)
-    subtitle = models.CharField(max_length=200,blank=True,null=True)
-    like_count = models.IntegerField(default=0)
-    owner = models.ForeignKey(User,on_delete = models.CASCADE)
-    create_at = models.DateTimeField(auto_now_add = True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.title
 
 

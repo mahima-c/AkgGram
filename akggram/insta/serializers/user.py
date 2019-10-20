@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class UserSerializer(ModelSerializer):
     
-    class Meta:
+    #class Meta:
         module = User
         fields = (
             'id',

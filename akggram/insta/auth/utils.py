@@ -7,13 +7,19 @@ from django.contrib.auth.models import User,Group
 from django.conf import settings as django_settings
 from rest_framework.authtoken.models import Token
 from insta.models import Profile
-from insta.auth import settings as auth_settings
 import re
+
+
+
+
+#auth setting
+AUTH_PASSWORD_SALT = 'LtC66ubP'
+AUTH_TOKEN_AGE = 60*15 #15 MIN
 
 class AuthTools:
     #"auth tool"
-    password_salt = auth_settings.AUTH_PASSWORD_SALT
-    token_age = auth_settings.AUTH_TOKEN_AGE
+    password_salt = AUTH_PASSWORD_SALT
+    token_age = AUTH_TOKEN_AGE
 
     @staticmethod
     def issue_user_token(user,salt):
@@ -54,6 +60,7 @@ class AuthTools:
             'username': user.username,
             'email': user.email,
         }
+        
     @staticmethod
     def authenticate(username,password):
         '''authenticate user by username'''

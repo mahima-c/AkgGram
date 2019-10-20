@@ -12,7 +12,7 @@
 
 #]
 from django.conf.urls import url
-from insta.auth import views 
+from insta import views 
 
 urlpatterns = [
     url('me/', views.UserView.as_view(),name='user'),

@@ -9,8 +9,8 @@ from insta.serializers.user import UserSerializer
 from insta.models import Profile
 import re
 from insta.permissions import IsAdmin
-from rest_framework.permissions import AllowAny,IsAuthenticated,DjangoModelPermissions
-from insta.auth.serializers import LoginSerializer
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from insta.auth.serializers import LoginSerializer, UserRegisterSerializer
 
 
 User = get_user_model()
@@ -18,9 +18,8 @@ User = get_user_model()
 class UserView(generics.RetrieveAPIView):
     model = User
     serializer_class = UserSerializer
-    CONSUMER_PERMISSIONS=IsAuthenticated
 
-    Permission_classes = CONSUMER_PERMISSIONS
+    Permission_classes = IsAuthenticated
 
     def get_object(self,*args,**kwargs):
         return self.request.user
@@ -36,10 +35,9 @@ class ProfileView(generics.RetrieveAPIView):
 
 
 class Loginview(generics.RetrieveAPIView):
-    UNPROTECTED=AllowAny
-    Permission_classes = UNPROTECTED
+    Permission_classes =AllowAny
     serializer_class = LoginSerializer
-
+   
     def post(self,request):
         if 'email' in request.data and 'password' in request.data:
 
@@ -58,9 +56,8 @@ class Loginview(generics.RetrieveAPIView):
 
         
 class LogoutView(generics.RetrieveAPIView):
-    CONSUMER_PERMISSIONS=IsAuthenticated
 
-    Permission_classes = CONSUMER_PERMISSIONS
+    Permission_classes = IsAuthenticated
     def post(self,request):
         if AuthTools.logout(request):
             return Response(status=status.HTTP_200_OK)
@@ -71,8 +68,7 @@ class LogoutView(generics.RetrieveAPIView):
 class RegisterView(generics.RetrieveAPIView):
     serializer_class = serializers.UserRegisterSerializer
 
-    UNPROTECTED=AllowAny
-    Permission_classes = UNPROTECTED
+    Permission_classes = AllowAny
     def perform_create(self,serializer):
         instance = serializer.save()
 
