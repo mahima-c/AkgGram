@@ -33,6 +33,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                 'username':items['username'],
                 'email': items['email'],
                 'password': items['password'],
+                'first_name': items['first_name'],
+                'last_name': items['last_name'],
 
             }
             profile_data = {
@@ -47,15 +49,19 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('unable to register with the credential provied')
 
 class LoginSerializer(serializers.ModelSerializer):
-    auth_token = serializers.CharField(source='key')
-    user = UserSerializer(many=False)
-    class Meta:
-        model = Token
-        fields = (
-            'auth_token',
-            'user'
-        )
-        read_only_fields = fields
+    username = serializers.CharField()
+    password = serializers.CharField()
+    #auth_token = serializers.CharField(source='key')
+    #user = UserSerializer(many=False,read_only=True)
+    #class Meta:
+     #   model = Token
+      #  fields = (
+       #     'auth_token',
+        #    'user'
+        #)
+        #read_only_fields = fields
 
 
 
+class LoginCompleteSerializer(serializers.ModelSerializer):
+    auth_token =serializers.CharField(source='key',read_only=True)

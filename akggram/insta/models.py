@@ -14,7 +14,7 @@ class Profile(models.Model):
     website_url = models.CharField(blank=True,null=True,max_length=100)
     role = models.CharField(max_length=8,choices=ROLE_CHOICES)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.user.username
 
 

@@ -10,7 +10,7 @@ from insta.models import Profile
 import re
 from insta.permissions import IsAdmin
 from rest_framework.permissions import AllowAny,IsAuthenticated
-from insta.auth.serializers import LoginSerializer, UserRegisterSerializer
+from insta.auth.serializers import LoginSerializer, UserRegisterSerializer,LoginCompleteSerializer
 
 
 User = get_user_model()
@@ -37,7 +37,8 @@ class ProfileView(generics.RetrieveAPIView):
 class Loginview(generics.RetrieveAPIView):
     Permission_classes =AllowAny
     serializer_class = LoginSerializer
-   
+    #queryset = User.objects.all()
+    
     def post(self,request):
         if 'email' in request.data and 'password' in request.data:
 
@@ -45,10 +46,11 @@ class Loginview(generics.RetrieveAPIView):
             password = request.data['password']
 
             user = AuthTools.authenticate_email(email,password)
+            #it return none or user instance
 
             if user is not None and AuthTools.login(request,user):
                 token = AuthTools.issue_user_token(user,'login')
-                serializers = serializers.LoginSerializer(token)
+                serializers = serializers.LoginCompleteSerializer(token)
                 return Response(serializers.data)
 
         message ={'message':'unable to login with the credentials provided'} 
@@ -67,11 +69,12 @@ class LogoutView(generics.RetrieveAPIView):
 
 class RegisterView(generics.RetrieveAPIView):
     serializer_class = serializers.UserRegisterSerializer
-
     Permission_classes = AllowAny
     def perform_create(self,serializer):
-        instance = serializer.save()
+        isinstance = serializer.save()
 
+    '''def get_queryset(self):
+        pass'''
 
 
 

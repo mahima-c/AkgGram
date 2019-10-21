@@ -3,6 +3,7 @@ from insta.models import Profile
 
 
 class ProfileSerializer(ModelSerializer):
+    
     class Meta:
         module = Profile
         fields = (
