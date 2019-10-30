@@ -5,4 +5,7 @@ User = get_user_model()
 
 admin.site.register(OTP)
 admin.site.register(User)
+admin.site.register(Comment)
+admin.site.register(Post)
+
 
