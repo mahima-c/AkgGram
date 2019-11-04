@@ -19,6 +19,17 @@ from .models import OTP
 from django.contrib.auth import login,logout
 from django.utils import timezone
 from datetime import timedelta
+from rest_framework.authtoken.models import Token
+
+ 
+from rest_framework import permissions, \
+    viewsets, generics, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .serializers import PostSerializer, CommentSerializer, AuthorSerializer
+from .models import Post, Comment
+from .permissions import IsOwnerOrReadOnly, IsOwnerOrPostOwnerOrReadOnly
+from .pagination import FollowersLikersPagination
 
 # Create your views here.
 
@@ -56,9 +67,7 @@ class SignUp(APIView):
 
 
 class Activate(APIView):
-    """
-    Activate verifies the stored otp and the otp entered by user.
-    """
+   
     permission_classes = (permissions.AllowAny,IsNotActive)
     serializer_class = OTPSerializer
 
@@ -95,9 +104,7 @@ class Activate(APIView):
 
 
 class ResendOtp(generics.CreateAPIView):
-    """
-    views for resend the otp.
-    """
+   
     serializer_class = OTPSerializer
     permission_classes = (permissions.AllowAny,IsNotActive)
 
@@ -114,7 +121,7 @@ class ResendOtp(generics.CreateAPIView):
         otp = randint(100000, 1000000)
         data = OTP.objects.create(otp=otp,receiver= user)
         data.save()
-        subject = 'Activate Your Dealmart Account'
+        subject = 'Activate Your  Account'
         message = render_to_string('account_activate.html', {
             'user': user,
             'OTP': otp,
@@ -127,52 +134,47 @@ class ResendOtp(generics.CreateAPIView):
                         status=status.HTTP_201_CREATED)
 
 class Login(APIView):
-    """
-    the user can login either with email or username. EmailOrUsername is the function for it.
-    """
-
+    
     serializer_class = LoginSerializer
     permission_classes = (permissions.AllowAny,)
 
     def post(self,request,*args,**kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         uname_or_em = serializer.validated_data['uname_or_em']
         password = serializer.validated_data['password']
-        user = EmailOrUsername(self,uname_or_em = uname_or_em,password=password)
 
+        user = EmailOrUsername(self,uname_or_em = uname_or_em,password=password)
+        #token, created = Token.objects.get_or_create(user=user)
+'''
         if user == 2:
             return Response({'error':'Invalid Username or Email!!'},
                                 status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         elif user == 3:
             return Response({'error':'Incorrect Password'},
                                 status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-        else:
-            if user.is_active:
-                login(request, user)
-                return Response({'detail':'successfully Logged in!','user_id': user.id,
-                                 'username':user.username},
+        else:'''
+        if user.is_active:
+            login(request, user)
+            return Response({'detail':'successfully Logged in!','user_id': user.id,
+                                 'username':user.username, 'token': token.key,
+            'user_id': user.pk,
+            'email': user.email},
                                 status=status.HTTP_200_OK)
-            else:
-                return Response({'error':'Please! varify Your Email First','user_id':user.id},
+        else:
+            return Response({'error':'Please! varify Your Email First','user_id':user.id},
                                     status=status.HTTP_406_NOT_ACCEPTABLE)
 
-
+#new
+       
 class Logout(APIView):
     
     def get(self,request,*args,**kwargs):
         logout(request)
         return Response({'message':'successfully logged out'},
                         status=status.HTTP_200_OK)
- 
-from rest_framework import permissions, \
-    viewsets, generics, status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .serializers import PostSerializer, CommentSerializer, AuthorSerializer
-from .models import Post, Comment
-from .permissions import IsOwnerOrReadOnly, IsOwnerOrPostOwnerOrReadOnly
-from .pagination import FollowersLikersPagination
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -212,7 +214,6 @@ class ManageCommentView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class LikeView(APIView):
-    """Toggle like"""
 
     def get(self, request, format=None, post_id=None):
         post = Post.objects.get(pk=post_id)
