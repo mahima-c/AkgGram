@@ -22,9 +22,7 @@ urlpatterns = [
     url(r'^api/resendotp/(?P<user_id>[0-9]+)/$',views.ResendOtp.as_view(), name='resend-otp'),
     url(r'^api/login/$',views.Login.as_view()),
     url(r'^api/logout/$',views.Logout.as_view()),
-    url(r'^docs/', include_docs_urls(title='My API title')),path('feed/',
-         views.UserFeedView.as_view(),
-         name='feed'),
+    
     url('comment/<uuid:post_id>/',
          views.AddCommentView.as_view(),
          name='add-comment'),
