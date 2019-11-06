@@ -1,3 +1,4 @@
+         
 from .serializers import *
 from .permissions import *
 from django.db.models import Q
@@ -139,15 +140,29 @@ class Login(APIView):
     def post(self,request,*args,**kwargs):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
-        serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         uname_or_em = serializer.validated_data['uname_or_em']
         password = serializer.validated_data['password']
 
         user = EmailOrUsername(self,uname_or_em = uname_or_em,password=password)
-        #token, created = Token.objects.get_or_create(user=user)
-        
-        
+        if user == 1:
+            return Response({'error':'Invalid Username or Email!!'},
+                                status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+        elif user == 2:
+            return Response({'error':'Incorrect Password'},
+                                status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+        else:
+            if user.is_active:
+                login(request, user)
+                return Response({'detail':'successfully Logged in!','user_id': user.id,
+                                 'username':user.username},
+                                status=status.HTTP_200_OK)
+            else:
+                return Response({'error':'Please! varify Your Email First','user_id':user.id},
+                                    status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+        '''
         if user.is_active:
             login(request, user)
             return Response({'detail':'successfully Logged in!','user_id': user.id,
@@ -158,15 +173,14 @@ class Login(APIView):
         else:
             return Response({'error':'Please! varify Your Email First','user_id':user.id},
                                     status=status.HTTP_406_NOT_ACCEPTABLE)
-
-#new
-       
+       '''
 class Logout(APIView):
     
     def get(self,request,*args,**kwargs):
         logout(request)
         return Response({'message':'successfully logged out'},
                         status=status.HTTP_200_OK)
+# This viewset automatically provides `list` and `detail` actions.`retrieve``update` and `destroy` actions.
 
 
 class PostViewSet(viewsets.ModelViewSet):

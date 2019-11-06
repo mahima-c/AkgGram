@@ -30,11 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
 
-        """
-        function for password validation
-        :param data:
-        :return:
-        """
+
         password = data.get('password')
         pass_cnf = data.get('confirm_password')
 
@@ -99,7 +95,7 @@ class PostSerializer(serializers.ModelSerializer):
     post_comments = serializers.SerializerMethodField(
         'paginated_post_comments')
     liked_by_req_user = serializers.SerializerMethodField()
-
+# defaults to get_<field_name>
     class Meta:
         model = Post
         fields = ('id', 'author',  'photo',
@@ -123,3 +119,4 @@ class PostSerializer(serializers.ModelSerializer):
     def get_liked_by_req_user(self, obj):
         user = self.context['request'].user
         return user in obj.likes.all()
+

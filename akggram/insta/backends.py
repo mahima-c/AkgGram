@@ -1,3 +1,4 @@
+
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -24,7 +25,7 @@ def EmailOrUsername(self,uname_or_em,password):
             email = None
 
     if username is None and email is None:
-        return 2     #no such user
+        return 1     #no such user
 
     if email is not None:
         try:
@@ -32,15 +33,15 @@ def EmailOrUsername(self,uname_or_em,password):
             if user.check_password(password):
                 return user  #Valid user
             else:
-                return 3  #password incorrect
+                return 2  #password incorrect
         except User.DoesNotExist:
-            return 3 #Password incorrect
+            return 2 #Password incorrect
     if username is not None:
         try:
             user = User.objects.get(username =username)
             if user.check_password(password):
                 return user
             else:
-                return 3 #incorrect password
+                return 2 #incorrect password
         except User.DoesNotExist:
-            return 3 #Password Incorrect
+            return 2 #Password Incorrect
