@@ -94,8 +94,6 @@ class Activate(APIView):
         if otp.otp == code:
             receiver.is_active = True
             receiver.save()
-            user = User.objects.get('user')
-            receiver.roles.add(user)
             otp.delete()
             return Response({'message': 'Thank you for Email Verification you are successfully logged in'},
                             status=status.HTTP_200_OK)
@@ -148,18 +146,12 @@ class Login(APIView):
 
         user = EmailOrUsername(self,uname_or_em = uname_or_em,password=password)
         #token, created = Token.objects.get_or_create(user=user)
-'''
-        if user == 2:
-            return Response({'error':'Invalid Username or Email!!'},
-                                status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-        elif user == 3:
-            return Response({'error':'Incorrect Password'},
-                                status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-        else:'''
+        
+        
         if user.is_active:
             login(request, user)
             return Response({'detail':'successfully Logged in!','user_id': user.id,
-                                 'username':user.username, 'token': token.key,
+                                 'username':user.username, 
             'user_id': user.pk,
             'email': user.email},
                                 status=status.HTTP_200_OK)

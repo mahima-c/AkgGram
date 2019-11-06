@@ -75,7 +75,7 @@ class OTP(models.Model):
 class Post(models.Model):
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='user_posts')
-    photo = models.ImageField(upload_to=image_file_path,blank=False,editable=False)
+    photo = models.ImageField(blank=False,editable=False)
     text = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=30, blank=True)
     posted_on = models.DateTimeField(auto_now_add=True)
@@ -105,3 +105,10 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'{self.author}\'s comment'
+        
+class Message(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sender')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='receiver')
+    message = models.CharField(max_length=1200)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)

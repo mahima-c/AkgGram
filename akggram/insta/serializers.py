@@ -52,18 +52,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('username','id')
 
 class OTPSerializer(serializers.ModelSerializer):
-    """
-    serializer for otp
-    """
+    
 
     class Meta:
         model = OTP
         fields = ['otp']
 
 class LoginSerializer(serializers.ModelSerializer):
-    """
-    login serializer
-    """
+    
 
     uname_or_em = serializers.CharField(allow_null=False,required=True)
     password = serializers.CharField(style={'input_type': 'password'},required=True,
@@ -81,15 +77,13 @@ from django.core.paginator import Paginator
 
 
 class AuthorSerializer(serializers.ModelSerializer):
-    """Serializer for object author info"""
 
     class Meta:
         model = get_user_model()
-        fields = ('username', 'profile_pic')
+        fields = ('username', 'profile_image')
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    """Serializer for the comment objects"""
     author = AuthorSerializer(read_only=True)
 
     class Meta:
@@ -99,7 +93,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    """Serializer for the post objects"""
     author = AuthorSerializer(read_only=True)
     photo = serializers.ImageField(max_length=None, allow_empty_file=False)
     number_of_comments = serializers.SerializerMethodField()
