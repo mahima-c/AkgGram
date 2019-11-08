@@ -133,7 +133,7 @@ class UserSerializer(serializers.ModelSerializer):
                         'username': {'min_length': 3}}
 
     def update(self, instance, validated_data):
-        """Update a user, setting the password correctly and return it"""
+       # Update a user
         password = validated_data.pop('password', None)
         user = super().update(instance, validated_data)
 

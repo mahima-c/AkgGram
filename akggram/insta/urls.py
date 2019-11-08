@@ -64,17 +64,19 @@ urlpatterns = [
     url(r'^api/resendotp/(?P<user_id>[0-9]+)/$',views.ResendOtp.as_view(), name='resend-otp'),
     #url(r'^api/login/$',views.Login.as_view()),
     #url(r'^api/logout/$',views.Logout.as_view()),
-    path('login/',obtain_jwt_token),
-    url('comment/<uuid:post_id>/',
+    url('login/',obtain_jwt_token),
+    url('me/', views.ManageUserView.as_view(),
+         name='me'),
+
+
+    url('comment/<post_id>/',
          views.AddCommentView.as_view(),
          name='add-comment'),
-         #http://127.0.0.1:8000/insta/comment/4/
-     path('me/', views.ManageUserView.as_view(),
-         name='me'),    
+         
     url('comment/<int:comment_id>/',
          views.ManageCommentView.as_view(),
          name='manage-comment'),
-    url('like/<uuid:post_id>/',
+    url('like/<post_id>/',
          views.LikeView.as_view(),
          name='like'),
     
