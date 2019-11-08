@@ -54,7 +54,7 @@ class OTPSerializer(serializers.ModelSerializer):
         model = OTP
         fields = ['otp']
 
-class LoginSerializer(serializers.ModelSerializer):
+'''class LoginSerializer(serializers.ModelSerializer):
     
 
     uname_or_em = serializers.CharField(allow_null=False,required=True)
@@ -65,7 +65,7 @@ class LoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ('uname_or_em','password')
 
-
+'''
 from rest_framework import serializers
 from .models import Post, Comment
 from django.contrib.auth import get_user_model
@@ -120,3 +120,25 @@ class PostSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         return user in obj.likes.all()
 
+#Serializer for the user update
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = get_user_model()
+        fields = ('id', 'email', 'username', 'password',
+                  'fullname', 'bio', 'profile_image')
+        extra_kwargs = {'password': {'write_only': True,
+                                     'min_length': 5},
+                        'username': {'min_length': 3}}
+
+    def update(self, instance, validated_data):
+        """Update a user, setting the password correctly and return it"""
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+
+        if password:
+            user.set_password(password)
+            user.save()
+
+        return user

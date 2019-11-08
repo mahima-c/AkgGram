@@ -33,8 +33,8 @@ class User(AbstractUser):
     
     username=models.CharField(max_length=200,unique=True)
     email=models.EmailField(max_length=200,unique=True,help_text='Required')
-    first_name=models.CharField(max_length=200)
-    last_name=models.CharField(max_length=200)
+    fullname=models.CharField(max_length=200)
+    #last_name=models.CharField(max_length=200)
     profile_image = models.ImageField(null=True)
     website = models.URLField(null=True)
     bio = models.TextField(null=True)
@@ -75,7 +75,7 @@ class OTP(models.Model):
 class Post(models.Model):
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='user_posts')
-    photo = models.ImageField(blank=False,editable=False)
+    photo = models.ImageField(blank=True,editable=False)
     text = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=30, blank=True)
     posted_on = models.DateTimeField(auto_now_add=True)

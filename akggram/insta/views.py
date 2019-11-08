@@ -2,7 +2,6 @@
 from .serializers import *
 from .permissions import *
 from django.db.models import Q
-from .backends import EmailOrUsername
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 User=get_user_model()
@@ -50,7 +49,7 @@ class SignUp(APIView):
         username = serializer.validated_data['username']
         password = serializer.validated_data['password']
         user = User.objects.create_user(username=username,email=email,password=password,first_name=first_name,last_name=last_name)
-        otp = randint(100000, 1000000)
+        otp = randint(10000, 100000)
         data = OTP.objects.create(otp=otp,receiver=user)
         data.save()
         user.is_active = False
@@ -87,7 +86,7 @@ class Activate(APIView):
         if otp is None or receiver is None:
             return Response({'error':'you are not a valid user'},status=status.HTTP_400_BAD_REQUEST)
 
-        elif timezone.now() - otp.sent_on >= timedelta(days=0,hours=0,minutes=2,seconds=0):
+        elif timezone.now() - otp.sent_on >= timedelta(days=0,hours=0,minutes=5,seconds=0):
             otp.delete()
             return Response({'detail':'OTP expired!',
                                  'user_id':user_id})
@@ -96,6 +95,7 @@ class Activate(APIView):
             receiver.is_active = True
             receiver.save()
             otp.delete()
+
             return Response({'message': 'Thank you for Email Verification you are successfully logged in'},
                             status=status.HTTP_200_OK)
         else:
@@ -131,58 +131,9 @@ class ResendOtp(generics.CreateAPIView):
         return Response({'details': user.username +',Please confirm your email to complete registration.',
                          'user_id': user_id },
                         status=status.HTTP_201_CREATED)
-
-class Login(APIView):
-    
-    serializer_class = LoginSerializer
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self,request,*args,**kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        uname_or_em = serializer.validated_data['uname_or_em']
-        password = serializer.validated_data['password']
-
-        user = EmailOrUsername(self,uname_or_em = uname_or_em,password=password)
-        if user == 1:
-            return Response({'error':'Invalid Username or Email!!'},
-                                status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-        elif user == 2:
-            return Response({'error':'Incorrect Password'},
-                                status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-        else:
-            if user.is_active:
-                login(request, user)
-                return Response({'detail':'successfully Logged in!','user_id': user.id,
-                                 'username':user.username},
-                                status=status.HTTP_200_OK)
-            else:
-                return Response({'error':'Please! varify Your Email First','user_id':user.id},
-                                    status=status.HTTP_406_NOT_ACCEPTABLE)
-
-
-        '''
-        if user.is_active:
-            login(request, user)
-            return Response({'detail':'successfully Logged in!','user_id': user.id,
-                                 'username':user.username, 
-            'user_id': user.pk,
-            'email': user.email},
-                                status=status.HTTP_200_OK)
-        else:
-            return Response({'error':'Please! varify Your Email First','user_id':user.id},
-                                    status=status.HTTP_406_NOT_ACCEPTABLE)
-       '''
-class Logout(APIView):
-    
-    def get(self,request,*args,**kwargs):
-        logout(request)
-        return Response({'message':'successfully logged out'},
-                        status=status.HTTP_200_OK)
 # This viewset automatically provides `list` and `detail` actions.`retrieve``update` and `destroy` actions.
 
-
+#post view
 class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     queryset = Post.objects.all()
@@ -192,7 +143,7 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-
+#comment added views
 class AddCommentView(generics.CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -208,7 +159,7 @@ class AddCommentView(generics.CreateAPIView):
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+#for manage the commment
 class ManageCommentView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CommentSerializer
     lookup_url_kwarg = 'comment_id'
@@ -218,7 +169,7 @@ class ManageCommentView(generics.RetrieveUpdateDestroyAPIView):
         queryset = Comment.objects.all()
         return queryset
 
-
+#like view
 class LikeView(APIView):
 
     def get(self, request, format=None, post_id=None):
@@ -237,23 +188,9 @@ class LikeView(APIView):
         return Response(data)
 
 
-class GetLikersView(generics.ListAPIView):
-    serializer_class = AuthorSerializer
-    pagination_class = FollowersLikersPagination
-    permission_classes = (permissions.AllowAny,)
 
-    def get_queryset(self):
-        post_id = self.kwargs['post_id']
-        queryset = Post.objects.get(
-            pk=post_id).likes.all()
-        return queryset
+class ManageUserView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = UserSerializer
 
-
-class UserFeedView(generics.ListAPIView):
-    serializer_class = PostSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        following_users = user.following.all()
-        queryset = Post.objects.all().filter(author__in=following_users)
-        return queryset
+    def get_object(self):
+        return self.request.user
