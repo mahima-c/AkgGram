@@ -67,7 +67,8 @@ urlpatterns = [
     url('login/',obtain_jwt_token),
     url('me/', views.ManageUserView.as_view(),
          name='me'),
-
+    url('<username>/', views.UserProfileView.as_view(),
+         name='user-profile'),
 
     url('comment/<post_id>/',
          views.AddCommentView.as_view(),

@@ -194,3 +194,9 @@ class ManageUserView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         return self.request.user
+
+class UserProfileView(generics.RetrieveAPIView):
+    lookup_field = 'username'
+    queryset = get_user_model().objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = (permissions.AllowAny,)
