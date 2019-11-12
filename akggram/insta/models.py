@@ -71,7 +71,9 @@ class OTP(models.Model):
 
     def __str__(self):
         return ("%s has received otps: %s" %(self.receiver.username,self.otp))
+from django.utils.encoding import python_2_unicode_compatible
 
+@python_2_unicode_compatible
 class Post(models.Model):
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='user_posts')

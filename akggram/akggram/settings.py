@@ -143,13 +143,17 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 
 CORS_ORIGIN_WHITELIST=[
-    'http://localhost:8000',
+    'http://localhost:3000',
 ]
 CORS_ORIGIN_REGEX_WHITELIST=[
-    'http://localhost:8000',
+    'http://localhost:3000',
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+#for filter
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 9,
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
@@ -184,7 +188,7 @@ JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_LEEWAY': 0,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=300),#(5 minutes).
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=3000),#(5 minutes).
 
 
     'JWT_AUDIENCE': None,
@@ -205,3 +209,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'siinternpedia@gmail.com'
 EMAIL_HOST_PASSWORD = 'romanreigns@285'
 EMAIL_PORT = 587
+
+

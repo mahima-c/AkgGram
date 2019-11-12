@@ -43,12 +43,11 @@ class SignUp(APIView):
     def post(self, request, *args, **kwargs):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        first_name = serializer.validated_data['first_name']
-        last_name = serializer.validated_data['last_name']
+        fullname = serializer.validated_data['fullname']
         email = serializer.validated_data['email']
         username = serializer.validated_data['username']
         password = serializer.validated_data['password']
-        user = User.objects.create_user(username=username,email=email,password=password,first_name=first_name,last_name=last_name)
+        user = User.objects.create_user(username=username,email=email,password=password,fullname=fullname)
         otp = randint(10000, 100000)
         data = OTP.objects.create(otp=otp,receiver=user)
         data.save()
@@ -188,15 +187,77 @@ class LikeView(APIView):
         return Response(data)
 
 
-
+#edit the profile
 class ManageUserView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
 
     def get_object(self):
         return self.request.user
-
+#for see the profile
 class UserProfileView(generics.RetrieveAPIView):
     lookup_field = 'username'
     queryset = get_user_model().objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = (permissions.AllowAny,)
+
+#function for following   
+class FollowUserView(APIView):
+
+    def get(self, request, format=None, username=None):
+        to_user = get_user_model().objects.get(username=username) 
+        from_user = self.request.user #user
+        follow = None
+        if from_user.is_authenticated:
+            if from_user != to_user:
+                if from_user in to_user.followers.all():
+                    follow = False
+                    from_user.following.remove(to_user)
+                    to_user.followers.remove(from_user)
+                else:
+                    follow = True
+                    from_user.following.add(to_user)
+                    to_user.followers.add(from_user)
+        data = {
+            'follow': follow
+        }
+        return Response(data)   
+#for listing the follower view
+class GetFollowersView(generics.ListAPIView):
+    serializer_class = FollowSerializer
+    pagination_class = FollowersLikersPagination
+    permission_classes = (permissions.AllowAny,)
+
+    def get_queryset(self):
+        username = self.kwargs['username']
+        queryset = get_user_model().objects.get(
+            username=username).followers.all()
+        return queryset
+
+#following
+class GetFollowingView(generics.ListAPIView):
+    serializer_class = FollowSerializer
+    pagination_class = FollowersLikersPagination
+    permission_classes = (permissions.AllowAny,)
+
+    def get_queryset(self):
+        username = self.kwargs['username']
+        queryset = get_user_model().objects.get(
+            username=username).following.all()
+        return queryset        
+
+#for searching
+class SearchList(generics.ListAPIView):
+    # serializer_class = UserProfileSerializer
+    # queryset = User.objects.all()
+    # filter_backends = [filters.SearchFilter]
+    # search_fields = ['username',]
+    serializer_class = UserProfileSerializer
+    def get_queryset(self,username=None):
+        username = self.kwargs['username',]
+        queryset= get_user_model().objects.filter(username=username)
+        return queryset        
+
+
+
+
+

@@ -26,7 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('first_name','last_name','id','username', 'email','password','confirm_password')
+        fields = ('fullname','id','username', 'email','password','confirm_password')
 
     def validate(self, data):
 
@@ -105,6 +105,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_number_of_comments(self, obj):
         return Comment.objects.filter(post=obj).count()
+    #for showing user comment
 
     def paginated_post_comments(self, obj):
         page_size = 2
@@ -157,7 +158,6 @@ class UserPostsSerializer(serializers.ModelSerializer):
                
 class UserProfileSerializer(serializers.ModelSerializer):
     number_of_posts = serializers.SerializerMethodField()
-    followed_by_req_user = serializers.SerializerMethodField()
     user_posts = serializers.SerializerMethodField('paginated_user_posts')
 
     class Meta:
@@ -165,13 +165,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'fullname',
                   'bio', 'profile_image', 'number_of_followers',
                   'number_of_following', 'number_of_posts',
-                  'user_posts', 'followed_by_req_user')
-
+                  'user_posts')
+    #for finding no of post
     def get_number_of_posts(self, obj):
         return Post.objects.filter(author=obj).count()
-
+        
+    #for showing user post
     def paginated_user_posts(self, obj):
-        page_size = settings.PAGE_SIZE
+        page_size = 9 #settings.PAGE_SIZE
         paginator = Paginator(obj.user_posts.all(), page_size)
         page = self.context['request'].query_params.get('page') or 1
 
@@ -180,8 +181,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
         return serializer.data
 
-    def get_followed_by_req_user(self, obj):
-        user = self.context['request'].user
-        return user in obj.followers.all()
 
+class FollowSerializer(serializers.ModelSerializer):
+#Serializer for listing all followers
 
+    class Meta:
+        model = get_user_model()
+        fields = ('username', 'profile_pic')
