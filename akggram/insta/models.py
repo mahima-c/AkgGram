@@ -122,4 +122,25 @@ class Message(models.Model):
         ordering = ('timestamp',)
 
 
-#...........................
+
+class Notification(models.Model):
+
+    TYPE_CHOICES = (
+        ('like', 'Like'),
+        ('comment', 'Comment'),
+        ('follow', 'Follow')
+    )
+
+    creator = models.ForeignKey(User,on_delete=models.CASCADE, related_name='creator')
+    to = models.ForeignKey(User, on_delete=models.CASCADE,related_name='to')
+    notification_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    image = models.ForeignKey(Post, on_delete=models.CASCADE,null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return 'From: {} - To: {}'.format(self.creator, self.to)

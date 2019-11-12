@@ -188,3 +188,12 @@ class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ('username', 'profile_image')
+
+class NotificationSerializer(serializers.ModelSerializer):
+
+    creator = AuthorSerializer()
+    image = PostSerializer()
+
+    class Meta:
+        model = Notification
+        fields = '__all__'        

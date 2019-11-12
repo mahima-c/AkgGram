@@ -265,6 +265,11 @@ class SearchList(generics.ListAPIView):
         return queryset        
 
 
+class Notifications(APIView):
+    def get(self, request, format=None):
+        user = request.user
+
+
 
 
 
