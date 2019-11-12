@@ -75,7 +75,7 @@ from django.utils.encoding import python_2_unicode_compatible
 
 @python_2_unicode_compatible
 class Post(models.Model):
-    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
+    #id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='user_posts')
     photo = models.ImageField(blank=False,editable=False)
     text = models.TextField(max_length=500, blank=True)
@@ -115,3 +115,11 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.message
+
+    class Meta:
+        ordering = ('timestamp',)
+
+
+#...........................

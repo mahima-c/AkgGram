@@ -187,4 +187,4 @@ class FollowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ('username', 'profile_pic')
+        fields = ('username', 'profile_image')

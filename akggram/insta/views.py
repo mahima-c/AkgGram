@@ -193,6 +193,7 @@ class ManageUserView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         return self.request.user
+        
 #for see the profile
 class UserProfileView(generics.RetrieveAPIView):
     lookup_field = 'username'
@@ -202,25 +203,31 @@ class UserProfileView(generics.RetrieveAPIView):
 
 #function for following   
 class FollowUserView(APIView):
-
     def get(self, request, format=None, username=None):
-        to_user = get_user_model().objects.get(username=username) 
-        from_user = self.request.user #user
-        follow = None
-        if from_user.is_authenticated:
-            if from_user != to_user:
-                if from_user in to_user.followers.all():
-                    follow = False
-                    from_user.following.remove(to_user)
-                    to_user.followers.remove(from_user)
-                else:
-                    follow = True
-                    from_user.following.add(to_user)
-                    to_user.followers.add(from_user)
-        data = {
-            'follow': follow
-        }
-        return Response(data)   
+        username = self.kwargs['username']
+        try:
+
+            if get_user_model().objects.get(username=username):
+                to_user = get_user_model().objects.get(username=username) 
+                from_user = self.request.user #user
+                follow = None
+                if from_user.is_authenticated:
+                    if from_user != to_user:
+                        if from_user in to_user.followers.all():
+                            follow = False
+                            from_user.following.remove(to_user)
+                            to_user.followers.remove(from_user)
+                        else:
+                            follow = True
+                            from_user.following.add(to_user)
+                            to_user.followers.add(from_user)
+                data = {
+                    'follow': follow
+                }
+                return Response(data)
+        except get_user_model().objects.get(username=username).DoesNotExist:
+            return Response({"error": "not found"},status=status.HTTP_400_BAD_REQUEST)
+          
 #for listing the follower view
 class GetFollowersView(generics.ListAPIView):
     serializer_class = FollowSerializer

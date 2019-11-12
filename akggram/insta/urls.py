@@ -34,24 +34,18 @@ urlpatterns = [
     url(r'^profile/(?P<username>[\w.@+-]+)/$', views.UserProfileView.as_view(),
          name='userprofile'),
          
-     url('<slug:username>/follow/', views.FollowUserView.as_view(),
+    url(r'^follow/(?P<username>[\w.@+-]+)/$', views.FollowUserView.as_view(),
           name='follow-user'),
 
 
-    url('comment/<post_id>/',
-         views.AddCommentView.as_view(),
-         name='addcomment'),
+    url(r'^comment/(?P<post_id>[0-9]+)/$',views.AddCommentView.as_view(),name='addcomment'),
          
-    url('comment/<int:comment_id>/',
-         views.ManageCommentView.as_view(),
-         name='managecomment'),
-    url('like/<post_id>/',
-         views.LikeView.as_view(),
-         name='like'),
+    url(r'^comment/manage/(?P<comment_id>[0-9]+)/$',views.ManageCommentView.as_view(),name='managecomment'),
+     #r'^/(?P<user_id>[0-9]+)/$'
+    url(r'^like/(?P<post_id>[0-9]+)/$',views.LikeView.as_view(),name='like'),
     
-#     path('<slug:username>/get-followers/', views.GetFollowersView.as_view(),
-#          name='get-followers'),
-#     path('<slug:username>/get-following/', views.GetFollowingView.as_view(),
-#          name='get-following'),
+
+    url(r'^followers/(?P<username>[\w.@+-]+)/$',views.GetFollowersView.as_view(),name='getfollowers'),
+    url(r'^following/(?P<username>[\w.@+-]+)/$',views.GetFollowingView.as_view(),name='getfollowing'),
 
     ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
