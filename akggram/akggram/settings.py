@@ -76,6 +76,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
+
             ],
         },
     },
@@ -136,7 +138,13 @@ AUTH_USER_MODEL='insta.User'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
+STATICFILES_DIRS =[
+    os.path.join(BASE_DIR,'static'),
+]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static"),
+#     '/var/www/static/',
+# ]
 
 CORS_ORIGIN_ALLOW_ALL = True
 #A list of origins that are authorized to make cross-site HTTP requests. Defaults to [].

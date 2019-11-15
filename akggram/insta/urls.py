@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^api/', include(router.urls)),
     url(r'^api/signup/$', views.SignUp.as_view()),
     #url( r'^/api/post/$',PostViewSet.as_view(),name='post'),
+#     url(r'^api/post/$', views.PostViewSet()),
 
     url(r'^api/activate/(?P<user_id>[0-9]+)/$', views.Activate.as_view(), name='activate'),
     url(r'^api/resendotp/(?P<user_id>[0-9]+)/$',views.ResendOtp.as_view(), name='resend-otp'),

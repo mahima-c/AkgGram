@@ -19,12 +19,6 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
     PermissionsMixin
 
 
-def image_file_path(instance, filename):
-    """Generate file path for new recipe image"""
-    ext = filename.split('.')[-1]
-    filename = f'{uuid.uuid4()}.{ext}'
-
-    return os.path.join('uploads/', filename)
 
 
 # Create your models here.
@@ -35,8 +29,8 @@ class User(AbstractUser):
     email=models.EmailField(max_length=200,unique=True,help_text='Required')
     fullname=models.CharField(max_length=200)
     #last_name=models.CharField(max_length=200)
-    profile_image = models.ImageField(null=True)
-    website = models.URLField(null=True)
+    profile_image = models.ImageField(null=True,blank=False,upload_to='uploads')
+    # website = models.URLField(upload_to='uploads/',null=True)
     bio = models.TextField(null=True)
     followers = models.ManyToManyField(settings.AUTH_USER_MODEL,
                                        related_name="user_followers",
@@ -73,11 +67,10 @@ class OTP(models.Model):
         return ("%s has received otps: %s" %(self.receiver.username,self.otp))
 from django.utils.encoding import python_2_unicode_compatible
 
-@python_2_unicode_compatible
 class Post(models.Model):
-    #id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='user_posts')
-    photo = models.ImageField(blank=False,editable=False)
+    photo = models.ImageField(null=False,blank=False,upload_to='uploads')
+
     text = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=30, blank=True)
     posted_on = models.DateTimeField(auto_now_add=True)
@@ -116,6 +109,7 @@ class Message(models.Model):
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
+
         return self.message
 
     class Meta:

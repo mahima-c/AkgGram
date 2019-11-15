@@ -206,7 +206,6 @@ class FollowUserView(APIView):
     def get(self, request, format=None, username=None):
         username = self.kwargs['username']
         try:
-
             if get_user_model().objects.get(username=username):
                 to_user = get_user_model().objects.get(username=username) 
                 from_user = self.request.user #user
@@ -225,7 +224,7 @@ class FollowUserView(APIView):
                     'follow': follow
                 }
                 return Response(data)
-        except get_user_model().objects.get(username=username).DoesNotExist:
+        except(User.DoesNotExist,IndexError,ValueError):
             return Response({"error": "not found"},status=status.HTTP_400_BAD_REQUEST)
           
 #for listing the follower view
