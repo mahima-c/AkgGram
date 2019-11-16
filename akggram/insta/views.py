@@ -130,6 +130,7 @@ class ResendOtp(generics.CreateAPIView):
         return Response({'details': user.username +',Please confirm your email to complete registration.',
                          'user_id': user_id },
                         status=status.HTTP_201_CREATED)
+
 # This viewset automatically provides `list` and `detail` actions.`retrieve``update` and `destroy` actions.
 
 #post view
@@ -188,8 +189,8 @@ class LikeView(APIView):
 
 
 #edit the profile
-class ManageUserView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = UserSerializer
+class UpdateUserView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = EditProfileSerializer
 
     def get_object(self):
         return self.request.user
@@ -197,7 +198,7 @@ class ManageUserView(generics.RetrieveUpdateDestroyAPIView):
 #for see the profile
 class UserProfileView(generics.RetrieveAPIView):
     lookup_field = 'username'
-    queryset = get_user_model().objects.all()
+    queryset =  User.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = (permissions.AllowAny,)
 
@@ -205,21 +206,23 @@ class UserProfileView(generics.RetrieveAPIView):
 class FollowUserView(APIView):
     def get(self, request, format=None, username=None):
         username = self.kwargs['username']
+        #u=User.objects.get(username=username)
         try:
-            if get_user_model().objects.get(username=username):
-                to_user = get_user_model().objects.get(username=username) 
-                from_user = self.request.user #user
+            #if u:
+            if User.objects.get(username=username):
+                follow_user=User.objects.get(username=username)# follow user
+                login_user=self.request.user #login user
                 follow = None
-                if from_user.is_authenticated:
-                    if from_user != to_user:
-                        if from_user in to_user.followers.all():
+                if login_user.is_authenticated:
+                    if login_user != follow_user:
+                        if login_user in follow_user.followers.all():
                             follow = False
-                            from_user.following.remove(to_user)
-                            to_user.followers.remove(from_user)
+                            login_user.following.remove(follow_user)
+                            follow_user.followers.remove(login_user)
                         else:
                             follow = True
-                            from_user.following.add(to_user)
-                            to_user.followers.add(from_user)
+                            login_user.following.add(follow_user)
+                            follow_user.followers.add(login_user)
                 data = {
                     'follow': follow
                 }
@@ -228,47 +231,44 @@ class FollowUserView(APIView):
             return Response({"error": "not found"},status=status.HTTP_400_BAD_REQUEST)
           
 #for listing the follower view
-class GetFollowersView(generics.ListAPIView):
+class FollowersView(generics.ListAPIView):
     serializer_class = FollowSerializer
     pagination_class = FollowersLikersPagination
     permission_classes = (permissions.AllowAny,)
 
     def get_queryset(self):
         username = self.kwargs['username']
-        queryset = get_user_model().objects.get(
+        queryset =  User.objects.get(
             username=username).followers.all()
         return queryset
 
 #following
-class GetFollowingView(generics.ListAPIView):
+class FollowingView(generics.ListAPIView):
     serializer_class = FollowSerializer
     pagination_class = FollowersLikersPagination
     permission_classes = (permissions.AllowAny,)
 
     def get_queryset(self):
         username = self.kwargs['username']
-        queryset = get_user_model().objects.get(
+        queryset = User.objects.get(
             username=username).following.all()
         return queryset        
 
-#for searching
-class SearchList(generics.ListAPIView):
+#for searching by username
+class SearchViewset(generics.ListAPIView):
     # serializer_class = UserProfileSerializer
     # queryset = User.objects.all()
     # filter_backends = [filters.SearchFilter]
-    # search_fields = ['username',]
+    # search_fields = ['username']
     serializer_class = UserProfileSerializer
-    def get_queryset(self,username=None):
-        username = self.kwargs['username',]
-        queryset= get_user_model().objects.filter(username=username)
-        return queryset        
 
+    def get(self,username):
+        username = self.kwargs['username']
+        # try:
+        queryset= User.objects.filter(username=username)
+        return queryset
+        # except(User.DoesNotExist,IndexError,ValueError):
+        #     return Response({"error": "user not found"},status=status.HTTP_400_BAD_REQUEST)
 
-class Notifications(APIView):
-    def get(self, request, format=None):
-        user = request.user
-
-
-
-
-
+class Notification(generics.ListAPIView):
+    pass

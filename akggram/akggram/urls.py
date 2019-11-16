@@ -6,6 +6,8 @@ from rest_framework_jwt.views import obtain_jwt_token
 from rest_framework_jwt.views import refresh_jwt_token
 from rest_framework_jwt.views import verify_jwt_token
 from django.conf.urls import url
+from django.conf.urls.static import static
+from django.conf import settings
 
 
 
@@ -17,4 +19,4 @@ urlpatterns = [
     url(r'^api-token-refresh/', refresh_jwt_token),
     url(r'^api-token-verify/', verify_jwt_token),
     
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

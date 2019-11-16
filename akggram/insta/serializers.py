@@ -75,7 +75,7 @@ from django.core.paginator import Paginator
 class AuthorSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ('username', 'profile_image')
 
 
@@ -94,21 +94,20 @@ class PostSerializer(serializers.ModelSerializer):
     number_of_comments = serializers.SerializerMethodField()
     post_comments = serializers.SerializerMethodField(
         'paginated_post_comments')
-    liked_by_req_user = serializers.SerializerMethodField()
 # defaults to get_<field_name>
     class Meta:
         model = Post
         fields = ('id', 'author',  'photo',
                   'text', 'location', 'posted_on',
                   'number_of_likes', 'number_of_comments',
-                  'post_comments', 'liked_by_req_user')
+                  'post_comments')
 
     def get_number_of_comments(self, obj):
         return Comment.objects.filter(post=obj).count()
     #for showing user comment
 
     def paginated_post_comments(self, obj):
-        page_size = 2
+        page_size = 2 #only last two comment are view
         paginator = Paginator(obj.post_comments.all(), page_size)
         page = self.context['request'].query_params.get('page') or 1
 
@@ -117,24 +116,24 @@ class PostSerializer(serializers.ModelSerializer):
 
         return serializer.data
 
-    def get_liked_by_req_user(self, obj):
-        user = self.context['request'].user
-        return user in obj.likes.all()
+   
 
 #Serializer for the user update
 
-class UserSerializer(serializers.ModelSerializer):
+class EditProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = get_user_model()
-        fields = ('id', 'email', 'username', 'password',
-                  'fullname', 'bio', 'profile_image')
-        extra_kwargs = {'password': {'write_only': True,
-                                     'min_length': 5},
-                        'username': {'min_length': 3}}
+        model = User
+        fields = (      'id',
+                        'email', 
+                        'username', 
+                        'password',
+                        'fullname', 
+                        'bio', 
+                        'profile_image')
+        extra_kwargs = {'password': {'write_only': True} }
 
     def update(self, instance, validated_data):
-       # Update a user
         password = validated_data.pop('password', None)
         user = super().update(instance, validated_data)
 
@@ -149,8 +148,13 @@ class UserPostsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'photo', 'text', 'location', 'number_of_likes',
-                  'number_of_comments', 'posted_on')
+        fields = ('id', 
+                    'photo', 
+                    'text', 
+                    'location', 
+                    'number_of_likes',
+                  'number_of_comments', 
+                  'posted_on')
 
     def get_number_of_comments(self, obj):
         return Comment.objects.filter(post=obj).count() 
@@ -161,18 +165,23 @@ class UserProfileSerializer(serializers.ModelSerializer):
     user_posts = serializers.SerializerMethodField('paginated_user_posts')
 
     class Meta:
-        model = get_user_model()
-        fields = ('id', 'username', 'fullname',
-                  'bio', 'profile_image', 'number_of_followers',
-                  'number_of_following', 'number_of_posts',
-                  'user_posts')
+        model = User
+        fields = ('id', 
+                    'username', 
+                    'fullname',
+                    'bio', 
+                    'profile_image', 
+                    'number_of_followers',
+                    'number_of_following', 
+                    'number_of_posts',
+                     'user_posts')
     #for finding no of post
     def get_number_of_posts(self, obj):
         return Post.objects.filter(author=obj).count()
         
     #for showing user post
     def paginated_user_posts(self, obj):
-        page_size = 9 #settings.PAGE_SIZE
+        page_size = 9 #only last 9 post are view
         paginator = Paginator(obj.user_posts.all(), page_size)
         page = self.context['request'].query_params.get('page') or 1
 
@@ -186,7 +195,7 @@ class FollowSerializer(serializers.ModelSerializer):
 #Serializer for listing all followers
 
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ('username', 'profile_image')
 
 class NotificationSerializer(serializers.ModelSerializer):

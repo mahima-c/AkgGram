@@ -45,8 +45,9 @@ INSTALLED_APPS = [
     'rest_framework_jwt',
     'rest_pyotp',
     'corsheaders',
+    'django_filters',
 
-
+    'channels',
 
     'insta',
 
@@ -61,9 +62,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+   
 ]
 
 ROOT_URLCONF = 'akggram.urls'
+ASGI_APPLICATION = "akggram.routing.application"
 
 TEMPLATES = [
     {
@@ -83,7 +86,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'akggram.wsgi.application'
+# WSGI_APPLICATION = 'akggram.wsgi.application'
 
 
 # Database
@@ -132,20 +135,29 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-
-STATIC_URL = '/static/'
 AUTH_USER_MODEL='insta.User'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-STATICFILES_DIRS =[
-    os.path.join(BASE_DIR,'static'),
-]
+# STATIC_URL = '/static/'
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, "static"),
 #     '/var/www/static/',
 # ]
 
+# STATIC_ROOT = '/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+] 
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT=os.path.join(BASE_DIR,'media')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+    '/var/www/static/',
+]
 CORS_ORIGIN_ALLOW_ALL = True
 #A list of origins that are authorized to make cross-site HTTP requests. Defaults to [].
 
