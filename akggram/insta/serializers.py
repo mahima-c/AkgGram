@@ -53,6 +53,12 @@ class OTPSerializer(serializers.ModelSerializer):
     class Meta:
         model = OTP
         fields = ['otp']
+class StorySerializer(serializers.ModelSerializer):
+    
+
+    class Meta:
+        model = Story
+        fields = ['photo']
 
 '''class LoginSerializer(serializers.ModelSerializer):
     

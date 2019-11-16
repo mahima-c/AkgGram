@@ -65,6 +65,14 @@ class OTP(models.Model):
 
     def __str__(self):
         return ("%s has received otps: %s" %(self.receiver.username,self.otp))
+class Story(models.Model):
+    author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='story')
+    sent_on= models.DateTimeField(auto_now_add=True)
+    photo = models.ImageField(null=False,blank=False,upload_to='uploads')
+
+    def __str__(self):
+        return f'{self.creator}\'s story'
+
 from django.utils.encoding import python_2_unicode_compatible
 
 class Post(models.Model):
@@ -101,7 +109,7 @@ class Comment(models.Model):
     def __str__(self):
         return f'{self.author}\'s comment'
         
-class Message(models.Model):
+class ChatMessage(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sender')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='receiver')
     message = models.CharField(max_length=1200)

@@ -8,13 +8,15 @@ from .views import PostViewSet,UpdateUserView
 from django.urls import path, include
 from rest_framework_jwt.views import obtain_jwt_token
 from . import views
-from .views import SearchViewset
+from .views import SearchViewset,Notification,StoryViewSet
 
 
 app_name = 'insta'
 
 router = DefaultRouter()
 router.register(r'post',views.PostViewSet)
+# router.register(r'story',views.StoryViewSet)
+
 # router.register(r'search/(?P<username>)',SearchViewset,basename='')
 
 #http://127.0.0.1:8000/insta/api/post/
@@ -24,7 +26,7 @@ urlpatterns = [
     url(r'^api/signup/$', views.SignUp.as_view()),
     #url( r'^/api/post/$',PostViewSet.as_view(),name='post'),
 #    url(r'^api/post/$', views.PostViewSet()),
-
+     url(r'^Notification/$',views.Notification.as_view(),'notifications'),
     url(r'^api/activate/(?P<user_id>[0-9]+)/$', views.Activate.as_view(), name='activate'),
     url(r'^api/resendotp/(?P<user_id>[0-9]+)/$',views.ResendOtp.as_view(), name='resend-otp'),
     #url(r'^api/login/$',views.Login.as_view()),
@@ -32,7 +34,9 @@ urlpatterns = [
     url('login/',obtain_jwt_token),
     url('me/', views.UpdateUserView.as_view(),
          name='me'),
+
     url(r'^Search/(?P<username>[\w.@+-]+)/$', SearchViewset.as_view()),
+    url(r'^story/', StoryViewSet.as_view()),
 
      #for string using regex otherwise page not found 
      #http://127.0.0.1:8000/insta/profile/mahima-l/

@@ -132,6 +132,27 @@ class ResendOtp(generics.CreateAPIView):
                         status=status.HTTP_201_CREATED)
 
 # This viewset automatically provides `list` and `detail` actions.`retrieve``update` and `destroy` actions.
+class StoryViewSet(APIView):
+    serializer_class = StorySerializer
+    permission_classes = (IsOwnerOrReadOnly, permissions.IsAuthenticatedOrReadOnly)    
+    def post(self,request,*args,**kwargs): 
+        serializer =StorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            story = Story.objects.get(receiver=self.user)
+        except(TypeError, ValueError, OverflowError, OTP.DoesNotExist):
+            story = None
+        if timezone.now() - story.sent_on >= timedelta(days=0,hours=0,minutes=2,seconds=0):
+            story.delete()
+            return Response({"error": "not found"},status=status.HTTP_400_BAD_REQUEST)
+    
+   
+
+          
+
+
 
 #post view
 class PostViewSet(viewsets.ModelViewSet):
@@ -270,5 +291,16 @@ class SearchViewset(generics.ListAPIView):
         # except(User.DoesNotExist,IndexError,ValueError):
         #     return Response({"error": "user not found"},status=status.HTTP_400_BAD_REQUEST)
 
-class Notification(generics.ListAPIView):
-    pass
+
+class Notification(APIView):
+    serializer_class =  NotificationSerializer
+    queryset =  Notification.objects.all()
+    
+    def get(self, request, format=None):
+        user = request.user
+        notifications = models.Notification.objects.filter(to=user)
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response(serializer.data)
+    def perform_create(creator, to, notification_type):
+        notification = models.Notification.objects.create()   
+
