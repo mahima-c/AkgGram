@@ -53,12 +53,12 @@ class OTPSerializer(serializers.ModelSerializer):
     class Meta:
         model = OTP
         fields = ['otp']
-class StorySerializer(serializers.ModelSerializer):
+# class StorySerializer(serializers.ModelSerializer):
     
 
-    class Meta:
-        model = Story
-        fields = ['photo']
+#     class Meta:
+#         model = Story
+#         fields = ['photo']
 
 '''class LoginSerializer(serializers.ModelSerializer):
     
@@ -93,13 +93,21 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'author', 'text', 'posted_on')
         read_only_fields = ('author', 'id', 'posted_on')
 
+class StorySerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+    photo = serializers.ImageField(max_length=None, allow_empty_file=False)
+
+
+    class Meta:
+        model = Story
+        fields = ['photo','id', 'author']
 
 class PostSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     photo = serializers.ImageField(max_length=None, allow_empty_file=False)
     number_of_comments = serializers.SerializerMethodField()
     post_comments = serializers.SerializerMethodField(
-        'paginated_post_comments')
+        'all_post_comments')
 # defaults to get_<field_name>
     class Meta:
         model = Post
@@ -112,17 +120,23 @@ class PostSerializer(serializers.ModelSerializer):
         return Comment.objects.filter(post=obj).count()
     #for showing user comment
 
-    def paginated_post_comments(self, obj):
-        page_size = 2 #only last two comment are view
-        paginator = Paginator(obj.post_comments.all(), page_size)
-        page = self.context['request'].query_params.get('page') or 1
+    def all_post_comments(self, obj):
+        # page_size = 2 #only last two comment are view
+        # paginator = Paginator(obj.post_comments.all(), page_size)
+        # page = self.context['request'].query_params.get('page') or 1
 
-        post_comments = paginator.page(page)
+        post_comments = obj.post_comments.all()
         serializer = CommentSerializer(post_comments, many=True)
 
         return serializer.data
 
    
+class Userfeed(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+    photo = serializers.ImageField(max_length=None, allow_empty_file=False)
+    class Meta:
+        model = Post
+        fields = '__all__'
 
 #Serializer for the user update
 
@@ -168,7 +182,7 @@ class UserPostsSerializer(serializers.ModelSerializer):
                
 class UserProfileSerializer(serializers.ModelSerializer):
     number_of_posts = serializers.SerializerMethodField()
-    user_posts = serializers.SerializerMethodField('paginated_user_posts')
+    user_posts = serializers.SerializerMethodField('all_user_posts')
 
     class Meta:
         model = User
@@ -186,12 +200,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return Post.objects.filter(author=obj).count()
         
     #for showing user post
-    def paginated_user_posts(self, obj):
-        page_size = 9 #only last 9 post are view
-        paginator = Paginator(obj.user_posts.all(), page_size)
-        page = self.context['request'].query_params.get('page') or 1
-
-        user_posts = paginator.page(page)
+    def all_user_posts(self, obj):
+     
+        user_posts = obj.user_posts.all()
         serializer = UserPostsSerializer(user_posts, many=True)
 
         return serializer.data

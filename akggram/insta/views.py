@@ -1,3 +1,26 @@
+from django.shortcuts import render
+
+def index(request):
+    return render(request, 'insta/index.html', {})
+
+from django.utils.safestring import mark_safe
+import json
+
+
+def room(request, room_name):
+    return render(request, 'insta/room.html', {
+        'room_name_json': mark_safe(json.dumps(room_name))
+    })
+
+
+
+
+
+
+
+
+
+#...............................................api............................#
          
 from .serializers import *
 from .permissions import *
@@ -131,31 +154,61 @@ class ResendOtp(generics.CreateAPIView):
                          'user_id': user_id },
                         status=status.HTTP_201_CREATED)
 
-# This viewset automatically provides `list` and `detail` actions.`retrieve``update` and `destroy` actions.
-class StoryViewSet(APIView):
+class Storyviewset(APIView):
     serializer_class = StorySerializer
+
     permission_classes = (IsOwnerOrReadOnly, permissions.IsAuthenticatedOrReadOnly)    
-    def post(self,request,*args,**kwargs): 
-        serializer =StorySerializer(data=request.data)
+    def post(self, request, *args,**kwargs):
+    
+        serializer = StorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self,request,*args,**kwargs):
         try:
-            story = Story.objects.get(receiver=self.user)
-        except(TypeError, ValueError, OverflowError, OTP.DoesNotExist):
-            story = None
+            story = Story.objects.get(author=self.user)
+        except(TypeError, ValueError, OverflowError, story.DoesNotExist):
+            pass
+        #     story = None
         if timezone.now() - story.sent_on >= timedelta(days=0,hours=0,minutes=2,seconds=0):
             story.delete()
-            return Response({"error": "not found"},status=status.HTTP_400_BAD_REQUEST)
-    
-   
+            storyy=Story.objects.get(author=self.user)
+            serializer = StorySerializer(storyy, many=True)
 
-          
+            return Response(serializer.data)
+        # serializer = StorySerializer(story, many=True)
+        # return Response(serializer.data)
+# class StoryViewSet(viewsets.ViewSet):
+#     serializer_class = StorySerializer
+#     permission_classes = (IsOwnerOrReadOnly, permissions.IsAuthenticatedOrReadOnly)    
 
 
+#     def list(self, request):
+#         try:
+#             story = Story.objects.get(author=self.user)
+#         except(TypeError, ValueError, OverflowError, story.DoesNotExist):
+#             story = None
+#         if timezone.now() - story.sent_on >= timedelta(days=0,hours=0,minutes=2,seconds=0):
+#             story.delete()
+#             serializer = StorySerializer(story, many=True)
+
+#             return Response(serializer.data)
+
+#     def create(self, request):    
+#         serializer = StorySerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
+
+
+
+# This viewset automatically provides `list` and `detail` actions.`retrieve``update` and `destroy` actions.
 
 #post view
-class PostViewSet(viewsets.ModelViewSet):
+class Postviewset(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     queryset = Post.objects.all()
     permission_classes = (
@@ -165,7 +218,7 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
 #comment added views
-class AddCommentView(generics.CreateAPIView):
+class Addcommentview(generics.CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
@@ -181,7 +234,7 @@ class AddCommentView(generics.CreateAPIView):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #for manage the commment
-class ManageCommentView(generics.RetrieveUpdateDestroyAPIView):
+class Managecommentview(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CommentSerializer
     lookup_url_kwarg = 'comment_id'
     permission_classes = (IsOwnerOrPostOwnerOrReadOnly,)
@@ -191,7 +244,7 @@ class ManageCommentView(generics.RetrieveUpdateDestroyAPIView):
         return queryset
 
 #like view
-class LikeView(APIView):
+class Likeview(APIView):
 
     def get(self, request, format=None, post_id=None):
         post = Post.objects.get(pk=post_id)
@@ -207,24 +260,81 @@ class LikeView(APIView):
             'like': like
         }
         return Response(data)
+class Getlikers(generics.ListAPIView):
+    serializer_class = AuthorSerializer
+    permission_classes = (permissions.AllowAny,)
 
+    def get_queryset(self):
+        post_id = self.kwargs['post_id']
+        queryset = Post.objects.get(pk=post_id).likes.all()
+        return queryset
 
+# post.author.objects.all()
+# list of post ,user-following
+# done 
+class Userfeed(generics.ListAPIView):
+    serializer_class =  PostSerializer
+    permission_classes = (
+         IsOwnerOrReadOnly, permissions.IsAuthenticatedOrReadOnly)
+    def get_queryset(self):
+
+        user = self.request.user
+        post = Post.objects.filter(author__in=user.following.all())
+        return post
+
+  
 #edit the profile
-class UpdateUserView(generics.RetrieveUpdateDestroyAPIView):
+#done
+class Updateuserview(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = EditProfileSerializer
 
     def get_object(self):
         return self.request.user
         
 #for see the profile
-class UserProfileView(generics.RetrieveAPIView):
+class Userprofileview(generics.RetrieveAPIView):
     lookup_field = 'username'
     queryset =  User.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = (permissions.AllowAny,)
+    
+#edit the profile
+#done
+class Updateuserview(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = EditProfileSerializer
 
-#function for following   
-class FollowUserView(APIView):
+    def get_object(self):
+        return self.request.user
+        
+class Postsaveview(APIView):
+    def get(self, request, format=None, post_id=None):
+        post = Post.objects.get(pk=post_id)
+        user = self.request.user
+        if user.is_authenticated:
+            if post in user.save_post.all():
+                Save = False
+                user.save_post.remove(post)
+            else:
+                Save = True
+                user.save_post.add(post)
+        data = {
+            'Save': Save
+        }
+        return Response(data)
+
+class Getsavepost(generics.ListAPIView):
+    serializer_class = PostSerializer
+    # permission_classes = (permissions.AllowAny,)
+
+    def get_object(self):
+        user = self.request.user
+        queryset = User.objects.get(user).save_post.all()
+
+        return queryset        
+
+#function for following  
+# done 
+class Followuserview(APIView):
     def get(self, request, format=None, username=None):
         username = self.kwargs['username']
         #u=User.objects.get(username=username)
@@ -252,9 +362,9 @@ class FollowUserView(APIView):
             return Response({"error": "not found"},status=status.HTTP_400_BAD_REQUEST)
           
 #for listing the follower view
-class FollowersView(generics.ListAPIView):
+#done
+class Getfollowersview(generics.ListAPIView):
     serializer_class = FollowSerializer
-    pagination_class = FollowersLikersPagination
     permission_classes = (permissions.AllowAny,)
 
     def get_queryset(self):
@@ -264,9 +374,9 @@ class FollowersView(generics.ListAPIView):
         return queryset
 
 #following
-class FollowingView(generics.ListAPIView):
+#done
+class Getfollowingview(generics.ListAPIView):
     serializer_class = FollowSerializer
-    pagination_class = FollowersLikersPagination
     permission_classes = (permissions.AllowAny,)
 
     def get_queryset(self):
@@ -276,7 +386,7 @@ class FollowingView(generics.ListAPIView):
         return queryset        
 
 #for searching by username
-class SearchViewset(generics.ListAPIView):
+class Searchviewset(generics.ListAPIView):
     # serializer_class = UserProfileSerializer
     # queryset = User.objects.all()
     # filter_backends = [filters.SearchFilter]
@@ -290,9 +400,22 @@ class SearchViewset(generics.ListAPIView):
         return queryset
         # except(User.DoesNotExist,IndexError,ValueError):
         #     return Response({"error": "user not found"},status=status.HTTP_400_BAD_REQUEST)
+# class Userfeed(generics.ListAPIView):
+#     serializer_class =  PostSerializer
+#     queryset = Post.objects.all()
+#     permission_classes = (
+#         IsOwnerOrReadOnly, permissions.IsAuthenticatedOrReadOnly)
+#     def get(self,username):
+#         username = self.kwargs['username']
+#         Post= Post.author.objects.(username=username)
 
 
-class Notification(APIView):
+
+
+
+
+
+class Notifcation(APIView):
     serializer_class =  NotificationSerializer
     queryset =  Notification.objects.all()
     
@@ -301,6 +424,6 @@ class Notification(APIView):
         notifications = models.Notification.objects.filter(to=user)
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
-    def perform_create(creator, to, notification_type):
+    def perform_create():
         notification = models.Notification.objects.create()   
 
