@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
 
-    'channels',
+    # 'channels',
 
     'insta',
 
@@ -53,7 +53,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'akggram.urls'
-ASGI_APPLICATION = 'akggram.routing.application'
+# ASGI_APPLICATION = 'akggram.routing.application'
 # CHANNEL_LAYERS = {
 #     'default': {
 #         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -80,7 +80,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'akggram.wsgi.application'
+WSGI_APPLICATION = 'akggram.wsgi.application'
 
 
 # Database

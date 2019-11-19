@@ -72,6 +72,7 @@ class OTPSerializer(serializers.ModelSerializer):
         fields = ('uname_or_em','password')
 
 '''
+#..................................................................................................#
 from rest_framework import serializers
 from .models import Post, Comment
 from django.contrib.auth import get_user_model
@@ -101,11 +102,12 @@ class StorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Story
         fields = ['photo','id', 'author']
-
+#......................................................................................................#
 class PostSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     photo = serializers.ImageField(max_length=None, allow_empty_file=False)
     number_of_comments = serializers.SerializerMethodField()
+    # tager =serializers.SerializerMethodField('tager_people')
     post_comments = serializers.SerializerMethodField(
         'all_post_comments')
 # defaults to get_<field_name>
@@ -119,49 +121,22 @@ class PostSerializer(serializers.ModelSerializer):
     def get_number_of_comments(self, obj):
         return Comment.objects.filter(post=obj).count()
     #for showing user comment
-
+#user's post=obj
     def all_post_comments(self, obj):
-        # page_size = 2 #only last two comment are view
-        # paginator = Paginator(obj.post_comments.all(), page_size)
-        # page = self.context['request'].query_params.get('page') or 1
-
         post_comments = obj.post_comments.all()
         serializer = CommentSerializer(post_comments, many=True)
 
         return serializer.data
+    # def tager_people(self, obj):
+    #     tager = obj.tag.all()
+    #     serializer = CommentSerializer(tager, many=True)
+
+    #     return serializer.data
+    
 
    
-class Userfeed(serializers.ModelSerializer):
-    author = AuthorSerializer(read_only=True)
-    photo = serializers.ImageField(max_length=None, allow_empty_file=False)
-    class Meta:
-        model = Post
-        fields = '__all__'
 
-#Serializer for the user update
 
-class EditProfileSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = (      'id',
-                        'email', 
-                        'username', 
-                        'password',
-                        'fullname', 
-                        'bio', 
-                        'profile_image')
-        extra_kwargs = {'password': {'write_only': True} }
-
-    def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
-        user = super().update(instance, validated_data)
-
-        if password:
-            user.set_password(password)
-            user.save()
-
-        return user
 
 class UserPostsSerializer(serializers.ModelSerializer):
     number_of_comments = serializers.SerializerMethodField()
@@ -207,7 +182,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
         return serializer.data
 
-
+#..................................................................................................#
 class FollowSerializer(serializers.ModelSerializer):
 #Serializer for listing all followers
 
@@ -223,3 +198,34 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = '__all__'        
+
+class Userfeed(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+    photo = serializers.ImageField(max_length=None, allow_empty_file=False)
+    class Meta:
+        model = Post
+        fields = '__all__'
+#Serializer for the user update
+
+class EditProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (      'id',
+                        'email', 
+                        'username', 
+                        'password',
+                        'fullname', 
+                        'bio', 
+                        'profile_image')
+        extra_kwargs = {'password': {'write_only': True} }
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+
+        if password:
+            user.set_password(password)
+            user.save()
+
+        return user

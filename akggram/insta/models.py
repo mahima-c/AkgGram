@@ -11,8 +11,6 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 
 
   
-import uuid
-import os
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
@@ -37,8 +35,8 @@ class Post(models.Model):
     text = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=30, blank=True)
     posted_on = models.DateTimeField(auto_now_add=True)
-    likes = models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="likers",blank=True,symmetrical=False)
-
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="likers",blank=True)
+    tag_people=models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="tag",blank=True)
     class Meta:
         ordering = ['-posted_on']
 
@@ -61,22 +59,10 @@ class User(AbstractUser):
     profile_image = models.ImageField(null=True,blank=False,upload_to='uploads')
     # website = models.URLField(upload_to='uploads/',null=True)
     bio = models.TextField(null=True)
-    followers = models.ManyToManyField(settings.AUTH_USER_MODEL,
-                                       related_name="user_followers",
-                                       blank=True,
-                                       symmetrical=False)
-    following = models.ManyToManyField(settings.AUTH_USER_MODEL,
-                                       related_name="user_following",
-                                       blank=True,
-                                       symmetrical=False)
-    highlights = models.ManyToManyField(Story,
-                                       related_name="story_highlights",
-                                       blank=True,
-                                       symmetrical=False)
-    save_post = models.ManyToManyField(Post,
-                                       related_name="story_highlights",
-                                       blank=True,
-                                       symmetrical=False)                                 
+    followers = models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="user_followers",blank=True)
+    following = models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="user_following",blank=True)
+    highlights = models.ManyToManyField(Story,related_name="story_highlights",blank=True)
+    save_post = models.ManyToManyField(Post,related_name="story_post",blank=True)                                 
     def number_of_followers(self):
         if self.followers.count():
             return self.followers.count()

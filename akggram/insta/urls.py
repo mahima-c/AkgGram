@@ -15,6 +15,7 @@ app_name = 'insta'
 
 router = DefaultRouter()
 router.register(r'post',views.Postviewset)
+router.register(r'^story',views.Storyviewset)
 # router.register(r'story',views.StoryViewSet)
 
 # router.register(r'story',views.StoryViewSet)
@@ -24,13 +25,11 @@ router.register(r'post',views.Postviewset)
 #http://127.0.0.1:8000/insta/api/post/
 
 urlpatterns = [
-     path('chat/', views.index, name='index'),
-     path('<str:room_name>/', views.room, name='room'),
+     # path('chat/', views.index, name='index'),
+     # path('<str:room_name>/', views.room, name='room'),
 
 
      url('api/feed/',views.Userfeed.as_view(),name='feed'),
-     url(r'^api/getlikers/(?P<post_id>[0-9]+)/$',views.Getlikers.as_view(),name='getlikers'),
-     url(r'^api/getsavepost/$',views.Getsavepost.as_view(),name='getsavepost'),
 
     url(r'^api/', include(router.urls)),
     url(r'^api/signup/$', views.SignUp.as_view()),
@@ -45,7 +44,7 @@ urlpatterns = [
     url('api/me/', views.Updateuserview.as_view(),name='me'),
 
     url(r'^Search/(?P<username>[\w.@+-]+)/$', Searchviewset.as_view()),
-    url(r'^api/story/', Storyviewset.as_view()),
+#     url(r'^api/story/', Storyviewset.as_view()),
 
      #for string using regex otherwise page not found 
      #http://127.0.0.1:8000/insta/profile/mahima-l/
@@ -61,7 +60,11 @@ urlpatterns = [
     url(r'^comment/manage/(?P<comment_id>[0-9]+)/$',views.Managecommentview.as_view(),name='managecomment'),
      #r'^/(?P<user_id>[0-9]+)/$'
     url(r'^api/like/(?P<post_id>[0-9]+)/$',views.Likeview.as_view(),name='like'),
+    url(r'^api/getlikers/(?P<post_id>[0-9]+)/$',views.Getlikers.as_view(),name='getlikers'),
+
     url(r'^api/savepost/(?P<post_id>[0-9]+)/$',views.Postsaveview.as_view(),name='savepost'),
+    url(r'^api/getsavepost/$',views.Getsavepost.as_view(),name='getsavepost'),
+    # url(r'^api/getstoryview/$',views.Getstoryview.as_view(),name='getstory'),
 
     url(r'^follow/(?P<username>[\w.@+-]+)/$', views.Followuserview.as_view(),name='followuser'),
     

@@ -1,16 +1,16 @@
-from django.shortcuts import render
+# from django.shortcuts import render
 
-def index(request):
-    return render(request, 'insta/index.html', {})
+# def index(request):
+#     return render(request, 'insta/index.html', {})
 
-from django.utils.safestring import mark_safe
-import json
+# from django.utils.safestring import mark_safe
+# import json
 
 
-def room(request, room_name):
-    return render(request, 'insta/room.html', {
-        'room_name_json': mark_safe(json.dumps(room_name))
-    })
+# def room(request, room_name):
+#     return render(request, 'insta/room.html', {
+#         'room_name_json': mark_safe(json.dumps(room_name))
+#     })
 
 
 
@@ -52,7 +52,6 @@ from rest_framework.views import APIView
 from .serializers import PostSerializer, CommentSerializer, AuthorSerializer
 from .models import Post, Comment
 from .permissions import IsOwnerOrReadOnly, IsOwnerOrPostOwnerOrReadOnly
-from .pagination import FollowersLikersPagination
 
 # Create your views here.
 
@@ -154,30 +153,33 @@ class ResendOtp(generics.CreateAPIView):
                          'user_id': user_id },
                         status=status.HTTP_201_CREATED)
 
-class Storyviewset(APIView):
+class Storyviewset(viewsets.ModelViewSet):
     serializer_class = StorySerializer
+    queryset = Story.objects.all()
+    permission_classes = (
+        IsOwnerOrReadOnly, permissions.IsAuthenticatedOrReadOnly)
 
-    permission_classes = (IsOwnerOrReadOnly, permissions.IsAuthenticatedOrReadOnly)    
-    def post(self, request, *args,**kwargs):
-    
-        serializer = StorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+   
+    #     serializer = StorySerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self,request,*args,**kwargs):
-        try:
-            story = Story.objects.get(author=self.user)
-        except(TypeError, ValueError, OverflowError, story.DoesNotExist):
-            pass
-        #     story = None
-        if timezone.now() - story.sent_on >= timedelta(days=0,hours=0,minutes=2,seconds=0):
-            story.delete()
-            storyy=Story.objects.get(author=self.user)
-            serializer = StorySerializer(storyy, many=True)
+    # def get(self,request,*args,**kwargs):
+    #     try:
+    #         story = Story.objects.get(author=self.user)
+    #     except(TypeError, ValueError, OverflowError, story.DoesNotExist):
+    #         pass
+    #     #     story = None
+    #     if timezone.now() - story.sent_on >= timedelta(days=0,hours=0,minutes=2,seconds=0):
+    #         story.delete()
+    #         storyy=Story.objects.get(author=self.user)
+    #         serializer = StorySerializer(storyy, many=True)
 
-            return Response(serializer.data)
+    #         return Response(serializer.data)
         # serializer = StorySerializer(story, many=True)
         # return Response(serializer.data)
 # class StoryViewSet(viewsets.ViewSet):
@@ -269,7 +271,6 @@ class Getlikers(generics.ListAPIView):
         queryset = Post.objects.get(pk=post_id).likes.all()
         return queryset
 
-# post.author.objects.all()
 # list of post ,user-following
 # done 
 class Userfeed(generics.ListAPIView):
@@ -282,7 +283,8 @@ class Userfeed(generics.ListAPIView):
         post = Post.objects.filter(author__in=user.following.all())
         return post
 
-  
+
+ 
 #edit the profile
 #done
 class Updateuserview(generics.RetrieveUpdateDestroyAPIView):
@@ -297,7 +299,8 @@ class Userprofileview(generics.RetrieveAPIView):
     queryset =  User.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = (permissions.AllowAny,)
-    
+
+  
 #edit the profile
 #done
 class Updateuserview(generics.RetrieveUpdateDestroyAPIView):
@@ -305,7 +308,8 @@ class Updateuserview(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         return self.request.user
-        
+    
+#for save the post    
 class Postsaveview(APIView):
     def get(self, request, format=None, post_id=None):
         post = Post.objects.get(pk=post_id)
@@ -322,15 +326,27 @@ class Postsaveview(APIView):
         }
         return Response(data)
 
+#for viewing the save post
+#done
 class Getsavepost(generics.ListAPIView):
-    serializer_class = PostSerializer
-    # permission_classes = (permissions.AllowAny,)
+    serializer_class =  PostSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    def get_object(self):
+    def get_queryset(self):
+
         user = self.request.user
-        queryset = User.objects.get(user).save_post.all()
+        post = user.save_post.all()
+        return post
 
-        return queryset        
+# class Getsavepost(generics.ListAPIView):
+#     serializer_class = PostSerializer
+#     # permission_classes = (permissions.AllowAny,)
+
+#     def get_object(self):
+#         user = self.request.user
+#         queryset = user.objects.get().save_post.all()
+
+#         return queryset        
 
 #function for following  
 # done 
@@ -418,6 +434,7 @@ class Searchviewset(generics.ListAPIView):
 class Notifcation(APIView):
     serializer_class =  NotificationSerializer
     queryset =  Notification.objects.all()
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
     
     def get(self, request, format=None):
         user = request.user
@@ -425,5 +442,5 @@ class Notifcation(APIView):
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
     def perform_create():
-        notification = models.Notification.objects.create()   
+        notification = Notification.objects.create()   
 
