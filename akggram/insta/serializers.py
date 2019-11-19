@@ -53,6 +53,12 @@ class OTPSerializer(serializers.ModelSerializer):
     class Meta:
         model = OTP
         fields = ['otp']
+# class StorySerializer(serializers.ModelSerializer):
+    
+
+#     class Meta:
+#         model = Story
+#         fields = ['photo']
 
 '''class LoginSerializer(serializers.ModelSerializer):
     
@@ -66,6 +72,7 @@ class OTPSerializer(serializers.ModelSerializer):
         fields = ('uname_or_em','password')
 
 '''
+#..................................................................................................#
 from rest_framework import serializers
 from .models import Post, Comment
 from django.contrib.auth import get_user_model
@@ -75,7 +82,7 @@ from django.core.paginator import Paginator
 class AuthorSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ('username', 'profile_image')
 
 
@@ -87,54 +94,133 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'author', 'text', 'posted_on')
         read_only_fields = ('author', 'id', 'posted_on')
 
+class StorySerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+    photo = serializers.ImageField(max_length=None, allow_empty_file=False)
 
+
+    class Meta:
+        model = Story
+        fields = ['photo','id', 'author']
+#......................................................................................................#
 class PostSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     photo = serializers.ImageField(max_length=None, allow_empty_file=False)
     number_of_comments = serializers.SerializerMethodField()
+    # tager =serializers.SerializerMethodField('tager_people')
     post_comments = serializers.SerializerMethodField(
-        'paginated_post_comments')
-    liked_by_req_user = serializers.SerializerMethodField()
+        'all_post_comments')
 # defaults to get_<field_name>
     class Meta:
         model = Post
         fields = ('id', 'author',  'photo',
                   'text', 'location', 'posted_on',
                   'number_of_likes', 'number_of_comments',
-                  'post_comments', 'liked_by_req_user')
+                  'post_comments')
 
     def get_number_of_comments(self, obj):
         return Comment.objects.filter(post=obj).count()
     #for showing user comment
-
-    def paginated_post_comments(self, obj):
-        page_size = 2
-        paginator = Paginator(obj.post_comments.all(), page_size)
-        page = self.context['request'].query_params.get('page') or 1
-
-        post_comments = paginator.page(page)
+#user's post=obj
+    def all_post_comments(self, obj):
+        post_comments = obj.post_comments.all()
         serializer = CommentSerializer(post_comments, many=True)
 
         return serializer.data
+    # def tager_people(self, obj):
+    #     tager = obj.tag.all()
+    #     serializer = CommentSerializer(tager, many=True)
 
-    def get_liked_by_req_user(self, obj):
-        user = self.context['request'].user
-        return user in obj.likes.all()
+    #     return serializer.data
+    
 
-#Serializer for the user update
+   
 
-class UserSerializer(serializers.ModelSerializer):
+
+
+class UserPostsSerializer(serializers.ModelSerializer):
+    number_of_comments = serializers.SerializerMethodField()
 
     class Meta:
-        model = get_user_model()
-        fields = ('id', 'email', 'username', 'password',
-                  'fullname', 'bio', 'profile_image')
-        extra_kwargs = {'password': {'write_only': True,
-                                     'min_length': 5},
-                        'username': {'min_length': 3}}
+        model = Post
+        fields = ('id', 
+                    'photo', 
+                    'text', 
+                    'location', 
+                    'number_of_likes',
+                  'number_of_comments', 
+                  'posted_on')
+
+    def get_number_of_comments(self, obj):
+        return Comment.objects.filter(post=obj).count() 
+        
+               
+class UserProfileSerializer(serializers.ModelSerializer):
+    number_of_posts = serializers.SerializerMethodField()
+    user_posts = serializers.SerializerMethodField('all_user_posts')
+
+    class Meta:
+        model = User
+        fields = ('id', 
+                    'username', 
+                    'fullname',
+                    'bio', 
+                    'profile_image', 
+                    'number_of_followers',
+                    'number_of_following', 
+                    'number_of_posts',
+                     'user_posts')
+    #for finding no of post
+    def get_number_of_posts(self, obj):
+        return Post.objects.filter(author=obj).count()
+        
+    #for showing user post
+    def all_user_posts(self, obj):
+     
+        user_posts = obj.user_posts.all()
+        serializer = UserPostsSerializer(user_posts, many=True)
+
+        return serializer.data
+
+#..................................................................................................#
+class FollowSerializer(serializers.ModelSerializer):
+#Serializer for listing all followers
+
+    class Meta:
+        model = User
+        fields = ('username', 'profile_image')
+
+class NotificationSerializer(serializers.ModelSerializer):
+
+    creator = AuthorSerializer()
+    image = PostSerializer()
+
+    class Meta:
+        model = Notification
+        fields = '__all__'        
+
+class Userfeed(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+    photo = serializers.ImageField(max_length=None, allow_empty_file=False)
+    class Meta:
+        model = Post
+        fields = '__all__'
+#Serializer for the user update
+
+class EditProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (      'id',
+                        'email', 
+                        'username', 
+                        'password',
+                        'fullname', 
+                        'bio', 
+                        'profile_image')
+        extra_kwargs = {'password': {'write_only': True} }
 
     def update(self, instance, validated_data):
-       # Update a user
         password = validated_data.pop('password', None)
         user = super().update(instance, validated_data)
 
@@ -143,48 +229,3 @@ class UserSerializer(serializers.ModelSerializer):
             user.save()
 
         return user
-
-class UserPostsSerializer(serializers.ModelSerializer):
-    number_of_comments = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Post
-        fields = ('id', 'photo', 'text', 'location', 'number_of_likes',
-                  'number_of_comments', 'posted_on')
-
-    def get_number_of_comments(self, obj):
-        return Comment.objects.filter(post=obj).count() 
-        
-               
-class UserProfileSerializer(serializers.ModelSerializer):
-    number_of_posts = serializers.SerializerMethodField()
-    user_posts = serializers.SerializerMethodField('paginated_user_posts')
-
-    class Meta:
-        model = get_user_model()
-        fields = ('id', 'username', 'fullname',
-                  'bio', 'profile_image', 'number_of_followers',
-                  'number_of_following', 'number_of_posts',
-                  'user_posts')
-    #for finding no of post
-    def get_number_of_posts(self, obj):
-        return Post.objects.filter(author=obj).count()
-        
-    #for showing user post
-    def paginated_user_posts(self, obj):
-        page_size = 9 #settings.PAGE_SIZE
-        paginator = Paginator(obj.user_posts.all(), page_size)
-        page = self.context['request'].query_params.get('page') or 1
-
-        user_posts = paginator.page(page)
-        serializer = UserPostsSerializer(user_posts, many=True)
-
-        return serializer.data
-
-
-class FollowSerializer(serializers.ModelSerializer):
-#Serializer for listing all followers
-
-    class Meta:
-        model = get_user_model()
-        fields = ('username', 'profile_image')

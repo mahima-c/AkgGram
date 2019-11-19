@@ -11,23 +11,44 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 
 
   
-import uuid
-import os
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
     PermissionsMixin
 
 
-def image_file_path(instance, filename):
-    """Generate file path for new recipe image"""
-    ext = filename.split('.')[-1]
-    filename = f'{uuid.uuid4()}.{ext}'
-
-    return os.path.join('uploads/', filename)
 
 
 # Create your models here.
+class Story(models.Model):
+    author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='story')
+    sent_on= models.DateTimeField(auto_now_add=True)
+    photo = models.ImageField(null=False,blank=False,upload_to='uploads')
+
+    def __str__(self):
+        return f'{self.author}\'s story'
+
+class Post(models.Model):
+    author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='user_posts')
+    photo = models.ImageField(null=False,blank=False,upload_to='uploads')
+
+    text = models.TextField(max_length=500, blank=True)
+    location = models.CharField(max_length=30, blank=True)
+    posted_on = models.DateTimeField(auto_now_add=True)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="likers",blank=True)
+    tag_people=models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="tag",blank=True)
+    class Meta:
+        ordering = ['-posted_on']
+
+    def number_of_likes(self):
+        if self.likes.count():
+            return self.likes.count()
+        else:
+            return 0
+
+    def __str__(self):
+        return f'{self.author}\'s post'
+
 
 class User(AbstractUser):
     
@@ -35,18 +56,13 @@ class User(AbstractUser):
     email=models.EmailField(max_length=200,unique=True,help_text='Required')
     fullname=models.CharField(max_length=200)
     #last_name=models.CharField(max_length=200)
-    profile_image = models.ImageField(null=True)
-    website = models.URLField(null=True)
+    profile_image = models.ImageField(null=True,blank=False,upload_to='uploads')
+    # website = models.URLField(upload_to='uploads/',null=True)
     bio = models.TextField(null=True)
-    followers = models.ManyToManyField(settings.AUTH_USER_MODEL,
-                                       related_name="user_followers",
-                                       blank=True,
-                                       symmetrical=False)
-    following = models.ManyToManyField(settings.AUTH_USER_MODEL,
-                                       related_name="user_following",
-                                       blank=True,
-                                       symmetrical=False)
-
+    followers = models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="user_followers",blank=True)
+    following = models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="user_following",blank=True)
+    highlights = models.ManyToManyField(Story,related_name="story_highlights",blank=True)
+    save_post = models.ManyToManyField(Post,related_name="story_post",blank=True)                                 
     def number_of_followers(self):
         if self.followers.count():
             return self.followers.count()
@@ -71,29 +87,10 @@ class OTP(models.Model):
 
     def __str__(self):
         return ("%s has received otps: %s" %(self.receiver.username,self.otp))
+
+
 from django.utils.encoding import python_2_unicode_compatible
 
-@python_2_unicode_compatible
-class Post(models.Model):
-    #id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
-    author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='user_posts')
-    photo = models.ImageField(blank=False,editable=False)
-    text = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=30, blank=True)
-    posted_on = models.DateTimeField(auto_now_add=True)
-    likes = models.ManyToManyField(settings.AUTH_USER_MODEL,related_name="likers",blank=True,symmetrical=False)
-
-    class Meta:
-        ordering = ['-posted_on']
-
-    def number_of_likes(self):
-        if self.likes.count():
-            return self.likes.count()
-        else:
-            return 0
-
-    def __str__(self):
-        return f'{self.author}\'s post'
 
 
 class Comment(models.Model):
@@ -108,7 +105,7 @@ class Comment(models.Model):
     def __str__(self):
         return f'{self.author}\'s comment'
         
-class Message(models.Model):
+class ChatMessage(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sender')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='receiver')
     message = models.CharField(max_length=1200)
@@ -116,10 +113,32 @@ class Message(models.Model):
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
+
         return self.message
 
     class Meta:
         ordering = ('timestamp',)
 
 
-#...........................
+
+class Notification(models.Model):
+
+    TYPE_CHOICES = (
+        ('like', 'Like'),
+        ('comment', 'Comment'),
+        ('follow', 'Follow')
+    )
+
+    creator = models.ForeignKey(User,on_delete=models.CASCADE, related_name='creator')
+    to = models.ForeignKey(User, on_delete=models.CASCADE,related_name='to')
+    notification_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    image = models.ForeignKey(Post, on_delete=models.CASCADE,null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return 'From: {} - To: {}'.format(self.creator, self.to)
