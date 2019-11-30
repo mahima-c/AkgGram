@@ -15,7 +15,7 @@ app_name = 'insta'
 
 router = DefaultRouter()
 router.register(r'post',views.Postviewset)
-router.register(r'^story',views.Storyviewset)
+# router.register(r'^story',views.Storyviewset)
 # router.register(r'story',views.StoryViewSet)
 
 # router.register(r'story',views.StoryViewSet)
@@ -44,7 +44,7 @@ urlpatterns = [
     url('api/me/', views.Updateuserview.as_view(),name='me'),
 
     url(r'^Search/(?P<username>[\w.@+-]+)/$', Searchviewset.as_view()),
-#     url(r'^api/story/', Storyviewset.as_view()),
+    url(r'^api/story/', Storyviewset.as_view()),
 
      #for string using regex otherwise page not found 
      #http://127.0.0.1:8000/insta/profile/mahima-l/

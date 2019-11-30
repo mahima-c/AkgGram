@@ -153,33 +153,42 @@ class ResendOtp(generics.CreateAPIView):
                          'user_id': user_id },
                         status=status.HTTP_201_CREATED)
 
-class Storyviewset(viewsets.ModelViewSet):
+# class Storyviewset(viewsets.ModelViewSet):
+#     serializer_class = StorySerializer
+#     queryset = Story.objects.all()
+#     permission_classes = (
+#         IsOwnerOrReadOnly, permissions.IsAuthenticatedOrReadOnly)
+
+#     def perform_create(self, serializer):
+#         serializer.save(author=self.request.user)
+class Storyviewset(APIView):
     serializer_class = StorySerializer
-    queryset = Story.objects.all()
-    permission_classes = (
-        IsOwnerOrReadOnly, permissions.IsAuthenticatedOrReadOnly)
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-   
-    #     serializer = StorySerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self,request,*args,**kwargs):
+        serializer = StorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def get(self,request,*args,**kwargs):
-    #     try:
-    #         story = Story.objects.get(author=self.user)
-    #     except(TypeError, ValueError, OverflowError, story.DoesNotExist):
-    #         pass
-    #     #     story = None
-    #     if timezone.now() - story.sent_on >= timedelta(days=0,hours=0,minutes=2,seconds=0):
-    #         story.delete()
-    #         storyy=Story.objects.get(author=self.user)
-    #         serializer = StorySerializer(storyy, many=True)
+    def get(self,request,*args,**kwargs):
+        try:
+            user= self.request.user
+            story = Story.objects.get(author=user)
+            print(story,"hi")
+        except(TypeError, ValueError, OverflowError, Story.DoesNotExist):
+            pass
+            story = None
+        if story:
+            if timezone.now() - story.sent_on >= timedelta(days=0,hours=0,minutes=2,seconds=0):
+                story.delete()
+                # storyy=Story.objects.get(author=self.user)
+                return Response({'detail':'story deleted!'})
+                # serializer = StorySerializer(story, many=True)#
 
-    #         return Response(serializer.data)
+                # return Response(serializer.data)#
+        # save = Story.objects.filter(author=user)       
+        return Response({'info':story})#
         # serializer = StorySerializer(story, many=True)
         # return Response(serializer.data)
 # class StoryViewSet(viewsets.ViewSet):
@@ -219,11 +228,11 @@ class Postviewset(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-#comment added views
+# comment added views
 class Addcommentview(generics.CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
+    # queryset = Story.objects.all()
     def post(self, request, post_id=None):
         post = Post.objects.get(pk=post_id)
         serializer = CommentSerializer(data=request.data)
