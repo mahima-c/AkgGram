@@ -42,6 +42,7 @@ urlpatterns = [
     #url(r'^api/logout/$',views.Logout.as_view()),
     url('api/login/',obtain_jwt_token),
     url('api/me/', views.Updateuserview.as_view(),name='me'),
+   # url('me/mmm/', views.Updateuser.as_view(),name='mem'),
 
     url(r'^Search/(?P<username>[\w.@+-]+)/$', Searchviewset.as_view()),
     url(r'^api/story/', Storyviewset.as_view()),
@@ -59,6 +60,8 @@ urlpatterns = [
          
     url(r'^comment/manage/(?P<comment_id>[0-9]+)/$',views.Managecommentview.as_view(),name='managecomment'),
      #r'^/(?P<user_id>[0-9]+)/$'
+    url(r'^api/own/like/(?P<post_id>[0-9]+)/$',views.Likeviewown.as_view(),name='likeown'),
+
     url(r'^api/like/(?P<post_id>[0-9]+)/$',views.Likeview.as_view(),name='like'),
     url(r'^api/getlikers/(?P<post_id>[0-9]+)/$',views.Getlikers.as_view(),name='getlikers'),
 

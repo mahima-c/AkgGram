@@ -271,6 +271,22 @@ class Likeview(APIView):
             'like': like
         }
         return Response(data)
+
+
+class Likeviewown(APIView):
+
+    def get(self, request, format=None, post_id=None):
+        post = Post.objects.get(pk=post_id)
+        user = self.request.user
+        if user.is_authenticated:
+            if user in post.likes.all():
+                like = True
+            else:
+                like = False
+        data = {
+            'like': like
+        }
+        return Response(data)        
 class Getlikers(generics.ListAPIView):
     serializer_class = AuthorSerializer
     permission_classes = (permissions.AllowAny,)
@@ -309,7 +325,6 @@ class Userprofileview(generics.RetrieveAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = (permissions.AllowAny,)
 
-  
 #edit the profile
 #done
 class Updateuserview(generics.RetrieveUpdateDestroyAPIView):
@@ -440,16 +455,16 @@ class Searchviewset(generics.ListAPIView):
 
 
 
-class Notifcation(APIView):
-    serializer_class =  NotificationSerializer
-    queryset =  Notification.objects.all()
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
+# class Notifcation(APIView):
+#     serializer_class =  NotificationSerializer
+#     queryset =  Notification.objects.all()
+#     permission_classes = (permissions.IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
     
-    def get(self, request, format=None):
-        user = request.user
-        notifications = models.Notification.objects.filter(to=user)
-        serializer = NotificationSerializer(notifications, many=True)
-        return Response(serializer.data)
-    def perform_create():
-        notification = Notification.objects.create()   
+#     def get(self, request, format=None):
+#         user = request.user
+#         notifications = models.Notification.objects.filter(to=user)
+#         serializer = NotificationSerializer(notifications, many=True)
+#         return Response(serializer.data)
+#     def perform_create():
+#         notification = Notification.objects.create()   
 

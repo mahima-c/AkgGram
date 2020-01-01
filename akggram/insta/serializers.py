@@ -144,23 +144,25 @@ class UserPostsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 
-                    'photo', 
-                    'text', 
+                    'photo',
+                     'text', 
                     'location', 
                     'number_of_likes',
                   'number_of_comments', 
                   'posted_on',
                   'post_comments')
-
+       
     def get_number_of_comments(self, obj):
+        
         return Comment.objects.filter(post=obj).count()
 
     def all_post_comments(self, obj):
         
         post_comments =Comment.objects.filter(post=obj)#obj.post_comments.all()
-        print(post_comments)
+        #print(post_comments)
         serializer = CommentSerializer(post_comments, many=True)   
-        return serializer.data       
+        return serializer.data
+               
 class UserProfileSerializer(serializers.ModelSerializer):
     number_of_posts = serializers.SerializerMethodField()
     user_posts = serializers.SerializerMethodField('all_user_posts')
@@ -185,7 +187,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
      
         user_posts = obj.user_posts.all()
         serializer = UserPostsSerializer(user_posts, many=True)
-
         return serializer.data
 
 #..................................................................................................#
